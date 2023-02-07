@@ -3,16 +3,10 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://www.imxiejie.me/zh-cn/</loc>
-    <lastmod>2020-09-09T00:00:00+00:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
                 href="https://www.imxiejie.me/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="ar"
-                href="https://www.imxiejie.me/ar/"
                 />
     <xhtml:link
                 rel="alternate"
@@ -21,7 +15,6 @@
                 />
   </url><url>
     <loc>https://www.imxiejie.me/zh-cn/categories/</loc>
-    <lastmod>2020-09-09T00:00:00+00:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
@@ -29,62 +22,8 @@
                 />
     <xhtml:link
                 rel="alternate"
-                hreflang="ar"
-                href="https://www.imxiejie.me/ar/categories/"
-                />
-    <xhtml:link
-                rel="alternate"
                 hreflang="zh-cn"
                 href="https://www.imxiejie.me/zh-cn/categories/"
-                />
-  </url><url>
-    <loc>https://www.imxiejie.me/zh-cn/p/test-chinese/</loc>
-    <lastmod>2020-09-09T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://www.imxiejie.me/zh-cn/post/</loc>
-    <lastmod>2020-09-09T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="https://www.imxiejie.me/post/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="ar"
-                href="https://www.imxiejie.me/ar/post/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh-cn"
-                href="https://www.imxiejie.me/zh-cn/post/"
-                />
-  </url><url>
-    <loc>https://www.imxiejie.me/zh-cn/categories/test/</loc>
-    <lastmod>2020-09-09T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="https://www.imxiejie.me/categories/test/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh-cn"
-                href="https://www.imxiejie.me/zh-cn/categories/test/"
-                />
-  </url><url>
-    <loc>https://www.imxiejie.me/zh-cn/categories/%E6%B5%8B%E8%AF%95/</loc>
-    <lastmod>2020-09-09T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://www.imxiejie.me/zh-cn/page/</loc>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="https://www.imxiejie.me/page/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh-cn"
-                href="https://www.imxiejie.me/zh-cn/page/"
                 />
   </url><url>
     <loc>https://www.imxiejie.me/zh-cn/tags/</loc>
@@ -95,25 +34,8 @@
                 />
     <xhtml:link
                 rel="alternate"
-                hreflang="ar"
-                href="https://www.imxiejie.me/ar/tags/"
-                />
-    <xhtml:link
-                rel="alternate"
                 hreflang="zh-cn"
                 href="https://www.imxiejie.me/zh-cn/tags/"
-                />
-  </url><url>
-    <loc>https://www.imxiejie.me/zh-cn/%E5%85%B3%E4%BA%8E/</loc>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="https://www.imxiejie.me/about/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh-cn"
-                href="https://www.imxiejie.me/zh-cn/%E5%85%B3%E4%BA%8E/"
                 />
   </url>
 </urlset>
