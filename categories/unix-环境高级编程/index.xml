@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
-        <title>imxiejie</title>
-        <link>https://www.imxiejie.me/</link>
-        <description>Recent content on imxiejie</description>
+        <title>UNIX 环境高级编程 on imxiejie</title>
+        <link>https://www.imxiejie.me/categories/unix-%E7%8E%AF%E5%A2%83%E9%AB%98%E7%BA%A7%E7%BC%96%E7%A8%8B/</link>
+        <description>Recent content in UNIX 环境高级编程 on imxiejie</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>en-us</language>
-        <lastBuildDate>Wed, 08 Feb 2023 16:57:53 +0800</lastBuildDate><atom:link href="https://www.imxiejie.me/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Wed, 08 Feb 2023 16:57:53 +0800</lastBuildDate><atom:link href="https://www.imxiejie.me/categories/unix-%E7%8E%AF%E5%A2%83%E9%AB%98%E7%BA%A7%E7%BC%96%E7%A8%8B/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>UNIX 基础知识</title>
         <link>https://www.imxiejie.me/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/</link>
         <pubDate>Wed, 08 Feb 2023 16:57:53 +0800</pubDate>
@@ -194,22 +194,6 @@ time）&lt;/strong&gt;，它是进程运行的时间总量，其值与系统中�
 &lt;p&gt;应用程序既可以调用系统调用也可以调用库函数。很多库函数则会调用系统调用。&lt;br&gt;
 系统调用和库函数之间的一个差别是：系统调用通常提供一种最小接口，而库函数通常提供比较复杂的功能。&lt;/p&gt;
 </description>
-        </item>
-        <item>
-        <title>Archives</title>
-        <link>https://www.imxiejie.me/archives/</link>
-        <pubDate>Tue, 28 May 2019 00:00:00 +0000</pubDate>
-        
-        <guid>https://www.imxiejie.me/archives/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>Search</title>
-        <link>https://www.imxiejie.me/search/</link>
-        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-        
-        <guid>https://www.imxiejie.me/search/</guid>
-        <description></description>
         </item>
         
     </channel>

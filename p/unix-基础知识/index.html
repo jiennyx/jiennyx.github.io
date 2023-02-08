@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='一、UNIX 体系结构 严格意义上说，可以将操作系统定义为一种软件，它控制着计算机硬件资源，提供程序运行环境，通常将这种软件称为 内核（kernel），因为它相对较小，而且位于环境的核心。
+内核的接口称为 系统调用（system call），公用函数库 建立在系统调用之上，应用程序既可以使用公用函数库，也可以使用系统调用。
+shell 是一个特殊的应用程序，其为运行其他应用程序提供了一个接口。
+二、登录 用户登录 UNIX 系统时，先键入登录名，后键入口令。系统在其口令文件（通常为/etc/passwd）查看登录名。
+root:x:0:0:root:/root:/bin/bash
+口令中间中的登录项由 7 个以冒号分割的字段组成，依次是：登录名（root）、加密口令（x）、用户 ID（UID 0）、用户组 ID（GID 0）、注释字段（root）、起始目录（/root）以及 shell 程序（/bin/bash）。
+三、文件和目录 1. 文件系统 UNIX 文件系统是目录和文件的一种层次结构，所有东西的起点都是称为 根（root） 的目录，这个目录的名称是一个字符 / 。
+目录（directory） 是一个包含目录项的文件。在逻辑上，可以认为每个目录项都包含一个文件名，同时还包含说明该文件属性的信息。文件属性是指文件类型（是普通文件还是目录等）、文件大小、文件所有者、文件权限（其他用户能否访问该文件）以及文件最后的修改时间等。
+2. 文件名 目录中各个名字称为 文件名（filename）。只有 斜线（/） 和 空字符 这两个字符不能出现在文件名中。斜线用来分隔构成路径名的各文件名，空字符用来终止一个路径名。
+创建新目录时会自动创建两个文件名：.（称为点） 和 ..（称为点点）。点指向当前目录，点点指向父目录。在最高层次的根目录中，点和点点没有区别。
+3. 路径名 路径名（pathname） 是由一个或多个文件名组成的序列，文件名之间用斜线分隔。如：/usr/local/include。
+以斜线开头的路径名称为 绝对路径（absolute pathname），否则称为 相对路径（relative pathname）。相对路径指向相对于当前目录的文件。文件系统根的名字 / 是一个特殊的绝对路径名，它不包含文件名。
+4. 工作目录 每个进程都有一个 工作目录（working directory），所有的相对路径名都从工作目录开始解释。
+5. 起始目录 在登录时，工作目录被设置为 起始目录（home directory），可从口令文件中获得。
+四、输入和输出 1. 文件描述符 文件描述符（file descriptor） 通常是一个小的非负整数，内核用以标识一个特定进程正在访问的文件。当内核创建一个新文件或打开一个现有文件，都将返回一个文件描述符。在进行读、写操作时，都可以使用和这个文件描述符。'>
+<title>UNIX 基础知识</title>
+
+<link rel='canonical' href='https://www.imxiejie.me/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/'>
+
+<link rel="stylesheet" href="/scss/style.min.8191399262444ab68b72a18c97392f5349be20a1615d77445be51e974c144cff.css"><meta property='og:title' content='UNIX 基础知识'>
+<meta property='og:description' content='一、UNIX 体系结构 严格意义上说，可以将操作系统定义为一种软件，它控制着计算机硬件资源，提供程序运行环境，通常将这种软件称为 内核（kernel），因为它相对较小，而且位于环境的核心。
+内核的接口称为 系统调用（system call），公用函数库 建立在系统调用之上，应用程序既可以使用公用函数库，也可以使用系统调用。
+shell 是一个特殊的应用程序，其为运行其他应用程序提供了一个接口。
+二、登录 用户登录 UNIX 系统时，先键入登录名，后键入口令。系统在其口令文件（通常为/etc/passwd）查看登录名。
+root:x:0:0:root:/root:/bin/bash
+口令中间中的登录项由 7 个以冒号分割的字段组成，依次是：登录名（root）、加密口令（x）、用户 ID（UID 0）、用户组 ID（GID 0）、注释字段（root）、起始目录（/root）以及 shell 程序（/bin/bash）。
+三、文件和目录 1. 文件系统 UNIX 文件系统是目录和文件的一种层次结构，所有东西的起点都是称为 根（root） 的目录，这个目录的名称是一个字符 / 。
+目录（directory） 是一个包含目录项的文件。在逻辑上，可以认为每个目录项都包含一个文件名，同时还包含说明该文件属性的信息。文件属性是指文件类型（是普通文件还是目录等）、文件大小、文件所有者、文件权限（其他用户能否访问该文件）以及文件最后的修改时间等。
+2. 文件名 目录中各个名字称为 文件名（filename）。只有 斜线（/） 和 空字符 这两个字符不能出现在文件名中。斜线用来分隔构成路径名的各文件名，空字符用来终止一个路径名。
+创建新目录时会自动创建两个文件名：.（称为点） 和 ..（称为点点）。点指向当前目录，点点指向父目录。在最高层次的根目录中，点和点点没有区别。
+3. 路径名 路径名（pathname） 是由一个或多个文件名组成的序列，文件名之间用斜线分隔。如：/usr/local/include。
+以斜线开头的路径名称为 绝对路径（absolute pathname），否则称为 相对路径（relative pathname）。相对路径指向相对于当前目录的文件。文件系统根的名字 / 是一个特殊的绝对路径名，它不包含文件名。
+4. 工作目录 每个进程都有一个 工作目录（working directory），所有的相对路径名都从工作目录开始解释。
+5. 起始目录 在登录时，工作目录被设置为 起始目录（home directory），可从口令文件中获得。
+四、输入和输出 1. 文件描述符 文件描述符（file descriptor） 通常是一个小的非负整数，内核用以标识一个特定进程正在访问的文件。当内核创建一个新文件或打开一个现有文件，都将返回一个文件描述符。在进行读、写操作时，都可以使用和这个文件描述符。'>
+<meta property='og:url' content='https://www.imxiejie.me/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/'>
+<meta property='og:site_name' content='imxiejie'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2023-02-08T16:57:53&#43;08:00'/><meta property='article:modified_time' content='2023-02-08T16:57:53&#43;08:00'/><meta property='og:image' content='https://www.imxiejie.me/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/unix-book.jpeg' />
+<meta name="twitter:title" content="UNIX 基础知识">
+<meta name="twitter:description" content="一、UNIX 体系结构 严格意义上说，可以将操作系统定义为一种软件，它控制着计算机硬件资源，提供程序运行环境，通常将这种软件称为 内核（kernel），因为它相对较小，而且位于环境的核心。
+内核的接口称为 系统调用（system call），公用函数库 建立在系统调用之上，应用程序既可以使用公用函数库，也可以使用系统调用。
+shell 是一个特殊的应用程序，其为运行其他应用程序提供了一个接口。
+二、登录 用户登录 UNIX 系统时，先键入登录名，后键入口令。系统在其口令文件（通常为/etc/passwd）查看登录名。
+root:x:0:0:root:/root:/bin/bash
+口令中间中的登录项由 7 个以冒号分割的字段组成，依次是：登录名（root）、加密口令（x）、用户 ID（UID 0）、用户组 ID（GID 0）、注释字段（root）、起始目录（/root）以及 shell 程序（/bin/bash）。
+三、文件和目录 1. 文件系统 UNIX 文件系统是目录和文件的一种层次结构，所有东西的起点都是称为 根（root） 的目录，这个目录的名称是一个字符 / 。
+目录（directory） 是一个包含目录项的文件。在逻辑上，可以认为每个目录项都包含一个文件名，同时还包含说明该文件属性的信息。文件属性是指文件类型（是普通文件还是目录等）、文件大小、文件所有者、文件权限（其他用户能否访问该文件）以及文件最后的修改时间等。
+2. 文件名 目录中各个名字称为 文件名（filename）。只有 斜线（/） 和 空字符 这两个字符不能出现在文件名中。斜线用来分隔构成路径名的各文件名，空字符用来终止一个路径名。
+创建新目录时会自动创建两个文件名：.（称为点） 和 ..（称为点点）。点指向当前目录，点点指向父目录。在最高层次的根目录中，点和点点没有区别。
+3. 路径名 路径名（pathname） 是由一个或多个文件名组成的序列，文件名之间用斜线分隔。如：/usr/local/include。
+以斜线开头的路径名称为 绝对路径（absolute pathname），否则称为 相对路径（relative pathname）。相对路径指向相对于当前目录的文件。文件系统根的名字 / 是一个特殊的绝对路径名，它不包含文件名。
+4. 工作目录 每个进程都有一个 工作目录（working directory），所有的相对路径名都从工作目录开始解释。
+5. 起始目录 在登录时，工作目录被设置为 起始目录（home directory），可从口令文件中获得。
+四、输入和输出 1. 文件描述符 文件描述符（file descriptor） 通常是一个小的非负整数，内核用以标识一个特定进程正在访问的文件。当内核创建一个新文件或打开一个现有文件，都将返回一个文件描述符。在进行读、写操作时，都可以使用和这个文件描述符。"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://www.imxiejie.me/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/unix-book.jpeg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu87865fc6accf0c3d769e896d75694e81_162656_300x0_resize_q75_box.jpeg" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">imxiejie</a></h1>
+            <h2 class="site-description">Somebody has to win, so why not be me?</h2>
+        </div>
+    </header><ol class="social-menu">
+            
+                <li>
+                    <a 
+                        href='https://github.com/jiennyx'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>Dark Mode</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li>
+      <ol>
+        <li>
+          <ol>
+            <li><a href="#一unix-体系结构">一、UNIX 体系结构</a></li>
+          </ol>
+        </li>
+        <li><a href="#二登录">二、登录</a></li>
+        <li><a href="#三文件和目录">三、文件和目录</a>
+          <ol>
+            <li><a href="#1-文件系统">1. 文件系统</a></li>
+            <li><a href="#2-文件名">2. 文件名</a></li>
+            <li><a href="#3-路径名">3. 路径名</a></li>
+            <li><a href="#4-工作目录">4. 工作目录</a></li>
+            <li><a href="#5-起始目录">5. 起始目录</a></li>
+          </ol>
+        </li>
+        <li><a href="#四输入和输出">四、输入和输出</a>
+          <ol>
+            <li><a href="#1-文件描述符">1. 文件描述符</a></li>
+            <li><a href="#2-标准输入标准输出和标准错误">2. 标准输入、标准输出和标准错误</a></li>
+            <li><a href="#3-不带缓冲的-io">3. 不带缓冲的 I/O</a></li>
+            <li><a href="#4-标准-io">4. 标准 I/O</a></li>
+          </ol>
+        </li>
+        <li><a href="#五程序和进程">五、程序和进程</a>
+          <ol>
+            <li><a href="#1-程序">1. 程序</a></li>
+            <li><a href="#2-进程和进程-id">2. 进程和进程 ID</a></li>
+            <li><a href="#3-进程控制">3. 进程控制</a></li>
+            <li><a href="#4-线程和线程-id">4. 线程和线程 ID</a></li>
+          </ol>
+        </li>
+        <li><a href="#六出错处理">六、出错处理</a></li>
+        <li><a href="#七用户标识">七、用户标识</a>
+          <ol>
+            <li><a href="#1-用户-id">1. 用户 ID</a></li>
+            <li><a href="#2-组-id">2. 组 ID</a></li>
+            <li><a href="#3-附属组-id">3. 附属组 ID</a></li>
+          </ol>
+        </li>
+        <li><a href="#八信号">八、信号</a></li>
+        <li><a href="#九时间值">九、时间值</a></li>
+        <li><a href="#十系统调用和库函数">十、系统调用和库函数</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">
+                <img src="/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_800x0_resize_q75_box.jpeg"
+                        srcset="/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_800x0_resize_q75_box.jpeg 800w, /p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_1600x0_resize_q75_box.jpeg 1600w"
+                        width="800" 
+                        height="298" 
+                        loading="lazy"
+                        alt="Featured image of post UNIX 基础知识" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/unix-%E7%8E%AF%E5%A2%83%E9%AB%98%E7%BA%A7%E7%BC%96%E7%A8%8B/" >
+                UNIX 环境高级编程
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">UNIX 基础知识</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Feb 08, 2023</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    2 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h4 id="一unix-体系结构">一、UNIX 体系结构</h4>
+<p>严格意义上说，可以将操作系统定义为一种软件，它控制着计算机硬件资源，提供程序运行环境，通常将这种软件称为 <strong>内核（kernel）</strong>，因为它相对较小，而且位于环境的核心。</p>
+<p><img src="/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/architecture.png"
+	width="602"
+	height="393"
+	srcset="/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/architecture_hu75c6d5a5c75d7428e7f07f0b7ff38bf0_56994_480x0_resize_box_3.png 480w, /p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/architecture_hu75c6d5a5c75d7428e7f07f0b7ff38bf0_56994_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="Architecture of the UNIX operating system"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="153"
+		data-flex-basis="367px"
+	
+></p>
+<p>内核的接口称为 <strong>系统调用（system
+call）</strong>，<strong>公用函数库</strong> 建立在系统调用之上，应用程序既可以使用公用函数库，也可以使用系统调用。<br>
+<strong>shell</strong> 是一个特殊的应用程序，其为运行其他应用程序提供了一个接口。</p>
+<h3 id="二登录">二、登录</h3>
+<p>用户登录 UNIX
+系统时，先键入登录名，后键入口令。系统在其口令文件（通常为/etc/passwd）查看登录名。<br>
+<code>root:x:0:0:root:/root:/bin/bash</code><br>
+口令中间中的登录项由 7 个以冒号分割的字段组成，依次是：登录名（root）、加密口令（x）、用户
+ID（UID 0）、用户组 ID（GID 0）、注释字段（root）、起始目录（/root）以及 shell
+程序（/bin/bash）。</p>
+<h3 id="三文件和目录">三、文件和目录</h3>
+<h4 id="1-文件系统">1. 文件系统</h4>
+<p>UNIX
+文件系统是目录和文件的一种层次结构，所有东西的起点都是称为 <strong>根（root）</strong> 的目录，这个目录的名称是一个字符 <code>/</code> 。<br>
+<strong>目录（directory）</strong>
+是一个包含目录项的文件。在逻辑上，可以认为每个目录项都包含一个文件名，同时还包含说明该文件属性的信息。文件属性是指文件类型（是普通文件还是目录等）、文件大小、文件所有者、文件权限（其他用户能否访问该文件）以及文件最后的修改时间等。</p>
+<h4 id="2-文件名">2. 文件名</h4>
+<p>目录中各个名字称为 <strong>文件名（filename）</strong>。只有 <strong>斜线（/）</strong> 和 <strong>空字符</strong>
+这两个字符不能出现在文件名中。斜线用来分隔构成路径名的各文件名，空字符用来终止一个路径名。<br>
+创建新目录时会自动创建两个文件名：<strong>.（称为点）</strong>
+和 <strong>..（称为点点）</strong>。点指向当前目录，点点指向父目录。在最高层次的根目录中，点和点点没有区别。</p>
+<h4 id="3-路径名">3. 路径名</h4>
+<p><strong>路径名（pathname）</strong> 是由一个或多个文件名组成的序列，文件名之间用斜线分隔。如：<code>/usr/local/include</code>。<br>
+以斜线开头的路径名称为 <strong>绝对路径（absolute pathname）</strong>，否则称为
+<strong>相对路径（relative
+pathname）</strong>。相对路径指向相对于当前目录的文件。文件系统根的名字 <code>/</code>
+是一个特殊的绝对路径名，它不包含文件名。</p>
+<h4 id="4-工作目录">4. 工作目录</h4>
+<p>每个进程都有一个 <strong>工作目录（working
+directory）</strong>，所有的相对路径名都从工作目录开始解释。</p>
+<h4 id="5-起始目录">5. 起始目录</h4>
+<p>在登录时，工作目录被设置为 <strong>起始目录（home directory）</strong>，可从口令文件中获得。</p>
+<h3 id="四输入和输出">四、输入和输出</h3>
+<h4 id="1-文件描述符">1. 文件描述符</h4>
+<p><strong>文件描述符（file descriptor）</strong>
+通常是一个小的非负整数，内核用以标识一个特定进程正在访问的文件。当内核创建一个新文件或打开一个现有文件，都将返回一个文件描述符。在进行读、写操作时，都可以使用和这个文件描述符。</p>
+<h4 id="2-标准输入标准输出和标准错误">2. 标准输入、标准输出和标准错误</h4>
+<p>按惯例，每当运行一个新程序时，所有的 shell 都会为其打开 3 个文件描述符，分别是
+<strong>标准输入（standard input）</strong>、<strong>标准输出（standard output）</strong>
+和 <strong>标准错误（standard error）</strong>，相对应的描述符 ID 分别为
+0、1、2。如果不做特殊处理，则这 3 个描述符都链接向终端。</p>
+<h4 id="3-不带缓冲的-io">3. 不带缓冲的 I/O</h4>
+<p>函数 <strong>open</strong>、<strong>read</strong>、<strong>write</strong>、<strong>lseek</strong> 以及 <strong>close</strong> 提供了不带缓冲的
+I/O，这些函数都使用文件描述符。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// 从标准输入读，并向标准输出写
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="cp">#include</span> <span class="cpf">&#34;apue.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#define BUFFSIZE 4096
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">int</span> <span class="n">n</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="n">BUFFSIZE</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">while</span> <span class="p">((</span><span class="n">n</span> <span class="o">=</span> <span class="nf">read</span><span class="p">(</span><span class="n">STDIN_FILENO</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">BUFFSIZE</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nf">write</span><span class="p">(</span><span class="n">STDOUT_FILENO</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nf">err_sys</span><span class="p">(</span><span class="s">&#34;write error&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">err_sys</span><span class="p">(</span><span class="s">&#34;read error&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nf">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="4-标准-io">4. 标准 I/O</h4>
+<p>标准 I/O 函数为那些不带缓冲的 I/O 函数提供了一个带缓冲的接口。</p>
+<h3 id="五程序和进程">五、程序和进程</h3>
+<h4 id="1-程序">1. 程序</h4>
+<p><strong>程序（program）</strong> 是一个存储在磁盘上某个目录的可执行文件。</p>
+<h4 id="2-进程和进程-id">2. 进程和进程 ID</h4>
+<p><strong>进程（process）</strong> 是指程序的执行实例，每个进程都有一个唯一的非负整数作为其
+<strong>进程 ID</strong>。</p>
+<h4 id="3-进程控制">3. 进程控制</h4>
+<p>有 3 个主要用于进程控制的函数，分别为 <strong>fork</strong>、<strong>exec</strong> 和 <strong>waitpid</strong>。</p>
+<h4 id="4-线程和线程-id">4. 线程和线程 ID</h4>
+<p><strong>线程（thread）</strong>
+是操作系统能够进行运算调度的最小单位。通常，一个进程只有一个控制线程&mdash;某一时刻执行的一组机器指令。一个进程内的所有线程共享同一地址空间、文件描述符、栈以及进程相关的属性。<br>
+同进程相同，线程也用 ID 标识。但是，线程 ID
+只在其所在的进程内有意义，在另一个进程中没有意义。</p>
+<h3 id="六出错处理">六、出错处理</h3>
+<p>当 UNIX 系统函数出错时，通常会返回一个负值，而且整形变量 <strong>errno</strong>
+通常被设置为具有特定信息的值。在支持线程的环境中，多个线程共享进程地址空间，每个线程都有其局部的 <strong>errno</strong>
+值，以避免一个线程干扰另一个线程。<br>
+对于 <strong>errno</strong>
+应注意两条规则。第一条规则是：如果没有出错，其值不会被例程清除。因此，仅当函数返回错误时，才检验其值。第二条规则是：任何函数都不会将 <strong>errno</strong> 设置为 0，而且在 <strong>&lt;errno.h&gt;</strong> 中定义的常量都不为 0。<br>
+可将在 <strong>&lt;errno.h&gt;</strong>
+中定义的错误分为两类：致命性的和非致命性的。对于致命性的错误，无法恢复，最多只能打印一条错误信息。对于非致命性的错误，有时可以妥善处理。</p>
+<h3 id="七用户标识">七、用户标识</h3>
+<h4 id="1-用户-id">1. 用户 ID</h4>
+<p>口令文件登录项中的 <strong>用户 ID（user ID）</strong>
+是一个整数值，它向系统标识各个不同的用户。系统管理员在确定一个用户的登录名的同时，确定其用户
+ID。用户不能更改其用户 ID。用户 ID
+为 0 的用户称为 <strong>根用户（root）</strong>
+或 <strong>超级用户（superuser）</strong>。</p>
+<h4 id="2-组-id">2. 组 ID</h4>
+<p>口令文件登录项中还包含了用户的 <strong>组 ID（group ID）</strong>，组 ID
+也是由系统管理员在指定用户登录名分配的。多个用户可划分在同一个组
+ID，这可以使同组的成员之间共享资源（如文件）。<br>
+组文件将组名映射为数值的组 ID，组文件通常是 <code>/etc/group</code>。</p>
+<h4 id="3-附属组-id">3. 附属组 ID</h4>
+<p>大多数 UNIX
+系统版本还允许一个用户属于另外一些组。登录时，读取文件<code>/etc/group</code>，寻找列有该用户作为其成员的前
+16 个记录项就可以得到该用户的 <strong>附属组 ID（supplementary group ID）</strong>。</p>
+<h3 id="八信号">八、信号</h3>
+<p><strong>信号（signal）</strong> 用于通知进程发生了某种情况。进程有以下 3 种处理信号的方式。</p>
+<ol>
+<li>忽略信号。有些异常产生的后果不确定，不推荐使用这种处理方式。</li>
+<li>按系统默认方式处理。</li>
+<li>提供一个函数，信号发生时调用该函数，这称为捕捉该信号。</li>
+</ol>
+<blockquote>
+<p>当向一个进程发送信号时，我们必须是那个进程的所有者或者是超级用户。</p>
+</blockquote>
+<h3 id="九时间值">九、时间值</h3>
+<p>历史上，UNIX 使用过两种不同的时间值。</p>
+<ol>
+<li><strong>日历时间</strong>，该值是自 <strong>协调世界时（Coordinated Universal Time，UTC）</strong> 1970
+年 1 月 1 日 00:00:00 这个特定时间以为所经过的秒数。<br>
+系统基本数据类型 <code>time_t</code> 用于保存这种时间值。</li>
+<li><strong>进程时间</strong>，也被称为 CPU
+时间，用以度量进程使用的中央处理器资源。进程时间以时钟滴答计算，每秒钟曾取为
+50、60 或 100 个时钟滴答。<br>
+系统基本类型 <code>clock_t</code> 用于保存这种时间值。</li>
+</ol>
+<p>UNIX 系统为一个进程维护了 3 个进程时间值：</p>
+<ul>
+<li>时钟时间</li>
+<li>用户 CPU 时间</li>
+<li>系统 CPU 时间</li>
+</ul>
+<p><strong>时钟时间</strong> 又称为 <strong>墙上时钟时间（wall clock
+time）</strong>，它是进程运行的时间总量，其值与系统中同时运行的进程数量有关。<br>
+<strong>用户 CPU 时间</strong> 是指执行用户指令所用的时间量。<br>
+<strong>系统 CPU 时间</strong> 是指为该进程执行内核程序所用的时间量。</p>
+<h3 id="十系统调用和库函数">十、系统调用和库函数</h3>
+<p>应用程序既可以调用系统调用也可以调用库函数。很多库函数则会调用系统调用。<br>
+系统调用和库函数之间的一个差别是：系统调用通常提供一种最小接口，而库函数通常提供比较复杂的功能。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="jiennyx/jiennyx.github.io"
+        issue-term="pathname"
+        
+        label="Comment"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+        2023 imxiejie
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.16.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

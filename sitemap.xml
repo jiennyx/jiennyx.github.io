@@ -3,22 +3,19 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://www.imxiejie.me/</loc>
-    <lastmod>2020-09-09T00:00:00+00:00</lastmod>
+    <lastmod>2023-02-08T16:57:53+08:00</lastmod>
   </url><url>
     <loc>https://www.imxiejie.me/categories/</loc>
-    <lastmod>2020-09-09T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://www.imxiejie.me/p/test-chinese/</loc>
-    <lastmod>2020-09-09T00:00:00+00:00</lastmod>
+    <lastmod>2023-02-08T16:57:53+08:00</lastmod>
   </url><url>
     <loc>https://www.imxiejie.me/post/</loc>
-    <lastmod>2020-09-09T00:00:00+00:00</lastmod>
+    <lastmod>2023-02-08T16:57:53+08:00</lastmod>
   </url><url>
-    <loc>https://www.imxiejie.me/categories/test/</loc>
-    <lastmod>2020-09-09T00:00:00+00:00</lastmod>
+    <loc>https://www.imxiejie.me/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/</loc>
+    <lastmod>2023-02-08T16:57:53+08:00</lastmod>
   </url><url>
-    <loc>https://www.imxiejie.me/categories/%E6%B5%8B%E8%AF%95/</loc>
-    <lastmod>2020-09-09T00:00:00+00:00</lastmod>
+    <loc>https://www.imxiejie.me/categories/unix-%E7%8E%AF%E5%A2%83%E9%AB%98%E7%BA%A7%E7%BC%96%E7%A8%8B/</loc>
+    <lastmod>2023-02-08T16:57:53+08:00</lastmod>
   </url><url>
     <loc>https://www.imxiejie.me/archives/</loc>
     <lastmod>2019-05-28T00:00:00+00:00</lastmod>
@@ -29,5 +26,7 @@
     <loc>https://www.imxiejie.me/search/</loc>
   </url><url>
     <loc>https://www.imxiejie.me/tags/</loc>
+  </url><url>
+    <loc>https://www.imxiejie.me/categories/test/</loc>
   </url>
 </urlset>
