@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='一、文件描述符 文件描述符（file descriptor） 是一个非负整数，对于内核而言，所有打开的文件都通过文件描述符引用。当创建一个新文件或打开一个现有文件时，内核向进程返回一个文件描述符。
+按照惯例，UNIX 系统 shell 把文件描述符 0 跟进程的标准输入关联，1 跟标准输出关联，2 跟标准错误关联。
+文件描述符的变化范围因系统而异，为 0 ~ OPEN_MAX - 1。早期的 UNIX 系统实现采用的上限值是 19，现在的系统大多数将上限值提升至 63。对于其他一些系统，文件描述符的变化范围是无限的，它只受到系统配置的存储器总量、整形的字长以及系统管理员所配置的软限制和硬限制的约束。
+二、函数 open 和 openat 1 2 3 4 5 6 7 #include &amp;lt;fcntl.h&amp;gt; int open(const char *path, int oflag, ... /* mode_t mode */); int openat(int fd, const char *path, int oflag, ... /* mode_t mode */); 两函数的返回值：若成功，返回文件描述符；若出错，返回 -1 最后一个参数写为 &amp;hellip;，ISO C 用这种方法表明余下的参数的数量及其类型是可变的。
+对于 open 函数而言，仅当创建新文件时才使用最后这个参数。
+由 open 和 openat 函数返回的文件描述符一定是最小的未用的描述符值。'>
+<title>文件 I/O</title>
+
+<link rel='canonical' href='https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6-i/o/'>
+
+<link rel="stylesheet" href="/scss/style.min.8191399262444ab68b72a18c97392f5349be20a1615d77445be51e974c144cff.css"><meta property='og:title' content='文件 I/O'>
+<meta property='og:description' content='一、文件描述符 文件描述符（file descriptor） 是一个非负整数，对于内核而言，所有打开的文件都通过文件描述符引用。当创建一个新文件或打开一个现有文件时，内核向进程返回一个文件描述符。
+按照惯例，UNIX 系统 shell 把文件描述符 0 跟进程的标准输入关联，1 跟标准输出关联，2 跟标准错误关联。
+文件描述符的变化范围因系统而异，为 0 ~ OPEN_MAX - 1。早期的 UNIX 系统实现采用的上限值是 19，现在的系统大多数将上限值提升至 63。对于其他一些系统，文件描述符的变化范围是无限的，它只受到系统配置的存储器总量、整形的字长以及系统管理员所配置的软限制和硬限制的约束。
+二、函数 open 和 openat 1 2 3 4 5 6 7 #include &amp;lt;fcntl.h&amp;gt; int open(const char *path, int oflag, ... /* mode_t mode */); int openat(int fd, const char *path, int oflag, ... /* mode_t mode */); 两函数的返回值：若成功，返回文件描述符；若出错，返回 -1 最后一个参数写为 &amp;hellip;，ISO C 用这种方法表明余下的参数的数量及其类型是可变的。
+对于 open 函数而言，仅当创建新文件时才使用最后这个参数。
+由 open 和 openat 函数返回的文件描述符一定是最小的未用的描述符值。'>
+<meta property='og:url' content='https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6-i/o/'>
+<meta property='og:site_name' content='imxiejie'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2023-02-09T15:18:07&#43;08:00'/><meta property='article:modified_time' content='2023-02-09T15:18:07&#43;08:00'/><meta property='og:image' content='https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6-i/o/unix-book.jpeg' />
+<meta name="twitter:title" content="文件 I/O">
+<meta name="twitter:description" content="一、文件描述符 文件描述符（file descriptor） 是一个非负整数，对于内核而言，所有打开的文件都通过文件描述符引用。当创建一个新文件或打开一个现有文件时，内核向进程返回一个文件描述符。
+按照惯例，UNIX 系统 shell 把文件描述符 0 跟进程的标准输入关联，1 跟标准输出关联，2 跟标准错误关联。
+文件描述符的变化范围因系统而异，为 0 ~ OPEN_MAX - 1。早期的 UNIX 系统实现采用的上限值是 19，现在的系统大多数将上限值提升至 63。对于其他一些系统，文件描述符的变化范围是无限的，它只受到系统配置的存储器总量、整形的字长以及系统管理员所配置的软限制和硬限制的约束。
+二、函数 open 和 openat 1 2 3 4 5 6 7 #include &amp;lt;fcntl.h&amp;gt; int open(const char *path, int oflag, ... /* mode_t mode */); int openat(int fd, const char *path, int oflag, ... /* mode_t mode */); 两函数的返回值：若成功，返回文件描述符；若出错，返回 -1 最后一个参数写为 &amp;hellip;，ISO C 用这种方法表明余下的参数的数量及其类型是可变的。
+对于 open 函数而言，仅当创建新文件时才使用最后这个参数。
+由 open 和 openat 函数返回的文件描述符一定是最小的未用的描述符值。"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6-i/o/unix-book.jpeg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu87865fc6accf0c3d769e896d75694e81_162656_300x0_resize_q75_box.jpeg" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">imxiejie</a></h1>
+            <h2 class="site-description">Somebody has to win, so why not be me?</h2>
+        </div>
+    </header><ol class="social-menu">
+            
+                <li>
+                    <a 
+                        href='https://github.com/jiennyx'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>Dark Mode</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li>
+      <ol>
+        <li><a href="#一文件描述符">一、文件描述符</a></li>
+        <li><a href="#二函数-open-和-openat">二、函数 open 和 openat</a></li>
+        <li><a href="#三函数-creat">三、函数 creat</a></li>
+        <li><a href="#四函数-close">四、函数 close</a></li>
+        <li><a href="#五函数-lseek">五、函数 lseek</a></li>
+        <li><a href="#六函数-read">六、函数 read</a></li>
+        <li><a href="#七函数-write">七、函数 write</a></li>
+        <li><a href="#八io-的效率">八、I/O 的效率</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/%E6%96%87%E4%BB%B6-i/o/">
+                <img src="/p/%E6%96%87%E4%BB%B6-i/o/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_800x0_resize_q75_box.jpeg"
+                        srcset="/p/%E6%96%87%E4%BB%B6-i/o/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_800x0_resize_q75_box.jpeg 800w, /p/%E6%96%87%E4%BB%B6-i/o/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_1600x0_resize_q75_box.jpeg 1600w"
+                        width="800" 
+                        height="298" 
+                        loading="lazy"
+                        alt="Featured image of post 文件 I/O" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/unix-%E7%8E%AF%E5%A2%83%E9%AB%98%E7%BA%A7%E7%BC%96%E7%A8%8B/" >
+                UNIX 环境高级编程
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E6%96%87%E4%BB%B6-i/o/">文件 I/O</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Feb 09, 2023</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    2 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h3 id="一文件描述符">一、文件描述符</h3>
+<p><strong>文件描述符（file descriptor）</strong>
+是一个非负整数，对于内核而言，所有打开的文件都通过文件描述符引用。当创建一个新文件或打开一个现有文件时，内核向进程返回一个文件描述符。<br>
+按照惯例，UNIX 系统 shell 把文件描述符 0 跟进程的标准输入关联，1
+跟标准输出关联，2 跟标准错误关联。<br>
+文件描述符的变化范围因系统而异，为 <code>0 ~ OPEN_MAX - 1</code>。早期的 UNIX
+系统实现采用的上限值是 19，现在的系统大多数将上限值提升至
+63。对于其他一些系统，文件描述符的变化范围是无限的，它只受到系统配置的存储器总量、整形的字长以及系统管理员所配置的软限制和硬限制的约束。</p>
+<h3 id="二函数-open-和-openat">二、函数 open 和 openat</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;fcntl.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">open</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="kt">int</span> <span class="n">oflag</span><span class="p">,</span> <span class="p">...</span> <span class="cm">/* mode_t mode */</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">openat</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="kt">int</span> <span class="n">oflag</span><span class="p">,</span> <span class="p">...</span> <span class="cm">/* mode_t mode */</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                        <span class="err">两函数的返回值：若成功，返回文件描述符；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>最后一个参数写为 &hellip;，ISO C 用这种方法表明余下的参数的数量及其类型是可变的。<br>
+对于 open 函数而言，仅当创建新文件时才使用最后这个参数。</p>
+</blockquote>
+<p><strong>由 open 和 openat 函数返回的文件描述符一定是最小的未用的描述符值。</strong></p>
+<p><strong>open</strong> 和 <strong>openat</strong> 函数的区别在于：</p>
+<ol>
+<li><em>path</em> 参数指定的是绝对路径名，这种情况下，<em>fd</em> 参数将被忽略，openat
+函数就相当于 open 函数。</li>
+<li><em>path</em> 参数指定的是相对路径名，<em>fd</em>
+参数指出了相对路径名在文件系统中的开始地址。<em>fd</em>
+参数是通过打开相对路径名所在的目录来获取的。</li>
+<li><em>path</em> 参数指定了相对路径名，<em>fd</em> 参数具有特殊值
+<strong>AT_FDCWD</strong>。这种情况下，路径名在当前工作目录中获取，openat 函数在操作上与
+open 函数类似。</li>
+</ol>
+<blockquote>
+<p><strong>AT_FDCWD</strong> ，该宏的值是 -100，它主要用来指示 openat 应使用当前工作目录。</p>
+</blockquote>
+<p>openat 函数是 POSIX.1
+最新版本中新增的一类函数之一，希望解决两个问题：</p>
+<ol>
+<li>让线程可以使用相对路径名打开文件，而不再只能打开当前工作目录。</li>
+<li>可以避免 <strong>time-of-check-to-time-of-use（TOCTTOU）</strong> 错误。</li>
+</ol>
+<blockquote>
+<p>TOCTTOU
+错误的基本思想是：如果有两个基于文件的系统调用，其中第二个调用依赖于第一个调用的结果，那么程序就是脆弱的。因为两个调用不是原子操作，在两个调用之间，文件可能改变了，这也就造成了第一个调用的结果不再有效，使得程序的最终结果是错误的。</p>
+</blockquote>
+<h3 id="三函数-creat">三、函数 creat</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;fcntl.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">creat</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="kt">mode_t</span> <span class="n">mode</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                    <span class="err">返回值：若成功，返回为只写打开的文件描述符；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>creat 函数一个不足之处在于它以 <strong>只写</strong> 方式打开所创建的文件。</p>
+<h3 id="四函数-close">四、函数 close</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">close</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                                        <span class="err">返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>关闭一个文件时，会释放该进程加在该文件上的所有记录锁。<br>
+当一个进程终止时，内核会自动关闭它所有打开的文件。</p>
+<h3 id="五函数-lseek">五、函数 lseek</h3>
+<p>每个打开文件都有一个与其相关联的 <strong>“当前文件偏移量”（current file
+offset）</strong>。它通常是一个非负整数，用以度量从文件开始处计算的字节数。通常，读、写操作都从当前文件偏移处开始，并使偏移量增加所读写的字节数。按系统默认的情况，当打开一个新文件时，除非指定
+O_APPEND 选项，否则该偏移量被设置为 0。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">off_t</span> <span class="nf">lseek</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="kt">off_t</span> <span class="n">offset</span><span class="p">,</span> <span class="kt">int</span> <span class="n">whence</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                            <span class="err">返回值：若成功，返回新的文件偏移量；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>对参数 <em>offset</em> 的解释与参数 <em>whence</em> 的值有关。</p>
+<ul>
+<li>若 <em>whence</em> 是 SEEK_SET，则将该文件的偏移量设置为距文件开始处 <em>offset</em>
+个字节。</li>
+<li>若 <em>whence</em> 是 SEEK_CUR，则将该文件的偏移量设置为当前值加上 <em>offset</em>
+个字节，<em>offset</em> 可正可负。</li>
+<li>若 <em>whence</em> 是 SEEK_END，则将该文件的偏移量设置为文件长度加上
+<em>offset</em>，<em>offset</em> 可正可负。</li>
+</ul>
+<p>通常，文件的当前偏移量应该是一个非负整数，但是，某些设备也可能允许负的偏移量。但对于普通文件，其偏移量必须是一个非负值。因为偏移量可能是负值，所以在比较
+lseek 的返回值时，不应检测它是否小于 0，而应该检测它是否等于 -1。<br>
+lseek 仅将当前偏移量记录在内核中，它并不引起任何的 I/O
+操作。然后，该偏移量用于下一次的读或写操作。</p>
+<p>文件偏移量可以大于文件的当前长度，在这种情况下，对于文件的下一次写操作将会加长该文件，并在文件中造成一个空洞，这一点是允许的。位于文件中但没有写过的字节被读为
+0。文件的空洞并不要求在磁盘上占用存储区。具体处理方式与文件系统的实现有关，当定位到超出文件尾端之后写时，对于新写的数据需要分配磁盘块，但是对于原文件尾端和新开始写位置之间的部分则不需要分配磁盘块。</p>
+<p>文件空洞示例：
+<img src="/p/%E6%96%87%E4%BB%B6-i/o/c3-2.jpg"
+	width="1376"
+	height="284"
+	srcset="/p/%E6%96%87%E4%BB%B6-i/o/c3-2_hu2f1e02e515e351c311ec896043222feb_50257_480x0_resize_q75_box.jpg 480w, /p/%E6%96%87%E4%BB%B6-i/o/c3-2_hu2f1e02e515e351c311ec896043222feb_50257_1024x0_resize_q75_box.jpg 1024w"
+	loading="lazy"
+	
+		alt="Architecture of the UNIX operating system"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="484"
+		data-flex-basis="1162px"
+	
+></p>
+<p>因为 lseek 使用的偏移量是用 off_t
+类型表示的，所以允许具体实现根据各自特定的平台自行选择大小合适的数据类型。现今大多数平台提供两组接口以处理文件偏移量。一组使用
+32 位文件偏移量，另一组使用 64 位文件偏移量。</p>
+<blockquote>
+<p>注意：尽管可以实现 64 位文件偏移量，但是能否创建一个大于 2GB（$2^{31}$ - 1 字节）的文件则依赖于底层文件系统的类型。</p>
+</blockquote>
+<h3 id="六函数-read">六、函数 read</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">ssize_t</span> <span class="nf">read</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">nbytes</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                    <span class="err">返回值：读到的字节数，若已到文件尾，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>有多种情况可使实际读到的字节数少于要求读的字节数：</p>
+<ul>
+<li>读普通文件时，在读到要求字节数之前已经到达了文件尾端。</li>
+<li>当从终端设备读时，通常一次最多读一行。</li>
+<li>当从网络读时，网络中的缓冲机制可能造成返回值小于所要求读的字节数。</li>
+<li>当从管道或 FIFO 读时，如若管道包含的字节少于所需的数量，那么 read
+将只返回实际可用的字节数。</li>
+<li>当从某些面向记录的设备（如磁带）读时，一次最多返回一个记录。</li>
+<li>当一信号造成终端，而已经读了部分数据量时。</li>
+</ul>
+<p><strong>读操作从文件的当前偏移量开始，在成功返回之前，该偏移量将增加实际读到的字节数。</strong></p>
+<h3 id="七函数-write">七、函数 write</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">ssize_t</span> <span class="nf">write</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">nbytes</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                              <span class="err">返回值：若成功，返回已写的字节数；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>其返回值通常与参数 <em>nbytes</em> 的值相同，否则表示出错。write
+出错的一个常见原因是磁盘写满，或者是超过了一个给定进程的文件长度限制。<br>
+对于普通文件，写操作从文件的当前偏移量开始。如果在打开文件时，指定了 O_APPEND
+选项，则在每次写操作之前，将文件偏移量设置在文件的当前结尾处。在一次写操作成功后，该文件偏移量增加实际写的字节数。</p>
+<h3 id="八io-的效率">八、I/O 的效率</h3>
+<p>下图显示了用 20 种不同的缓冲区长度，读 516 581 760 字节的文件所得到的结果。
+<img src="/p/%E6%96%87%E4%BB%B6-i/o/c3-6.png"
+	width="1412"
+	height="894"
+	srcset="/p/%E6%96%87%E4%BB%B6-i/o/c3-6_hu4e9f394eb546b90da41d62ff02f543f1_538719_480x0_resize_box_3.png 480w, /p/%E6%96%87%E4%BB%B6-i/o/c3-6_hu4e9f394eb546b90da41d62ff02f543f1_538719_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="Architecture of the UNIX operating system"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="157"
+		data-flex-basis="379px"
+	
+>
+此测试所用的文件系统是 Linux ext4 文件系统，其磁盘块长度为 4 096 字节，图中 CPU
+时间的几个最小值差不多出现在 BUFFSIZE 为 4 096
+及以后得位置，继续增加缓冲区长度对此时间几乎没有影响。<br>
+大多数文件系统为改善性能都采用某种 <strong>预读（read ahead）</strong>
+技术。当检测到正进行顺序读取时，系统就试图读入比应用要求的更多数据，并假想应用很快就会读这些数据。从图中可以看出，缓冲区长度小至 32 字节时的时钟时间与拥有较大缓冲区长度时的时钟时间几乎一样。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">Related content</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">
+        
+        
+            <div class="article-image">
+                <img src="/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post UNIX 基础知识"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">UNIX 基础知识</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="jiennyx/jiennyx.github.io"
+        issue-term="pathname"
+        
+        label="Comment"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+        2023 imxiejie
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.16.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
