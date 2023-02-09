@@ -12,7 +12,7 @@
         <pubDate>Wed, 08 Feb 2023 16:57:53 +0800</pubDate>
         
         <guid>https://www.imxiejie.me/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/</guid>
-        <description>&lt;img src="https://www.imxiejie.me/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/unix-book.jpeg" alt="Featured image of post UNIX 基础知识" /&gt;&lt;h4 id=&#34;一unix-体系结构&#34;&gt;一、UNIX 体系结构&lt;/h4&gt;
+        <description>&lt;img src="https://www.imxiejie.me/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/unix-book.jpeg" alt="Featured image of post UNIX 基础知识" /&gt;&lt;h3 id=&#34;一unix-体系结构&#34;&gt;一、UNIX 体系结构&lt;/h3&gt;
 &lt;p&gt;严格意义上说，可以将操作系统定义为一种软件，它控制着计算机硬件资源，提供程序运行环境，通常将这种软件称为 &lt;strong&gt;内核（kernel）&lt;/strong&gt;，因为它相对较小，而且位于环境的核心。&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://www.imxiejie.me/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/architecture.png&#34;
 	width=&#34;602&#34;
