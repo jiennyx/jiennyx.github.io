@@ -127,12 +127,12 @@ O_APPEND 选项，否则该偏移量被设置为 0。&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;p&gt;对参数 &lt;em&gt;offset&lt;/em&gt; 的解释与参数 &lt;em&gt;whence&lt;/em&gt; 的值有关。&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;若 &lt;em&gt;whence&lt;/em&gt; 是 SEEK_SET，则将该文件的偏移量设置为距文件开始处 &lt;em&gt;offset&lt;/em&gt;
+&lt;li&gt;若 &lt;em&gt;whence&lt;/em&gt; 是 SEEK&lt;em&gt;SET，则将该文件的偏移量设置为距文件开始处 _offset&lt;/em&gt;
 个字节。&lt;/li&gt;
-&lt;li&gt;若 &lt;em&gt;whence&lt;/em&gt; 是 SEEK_CUR，则将该文件的偏移量设置为当前值加上 &lt;em&gt;offset&lt;/em&gt;
+&lt;li&gt;若 &lt;em&gt;whence&lt;/em&gt; 是 SEEK&lt;em&gt;CUR，则将该文件的偏移量设置为当前值加上 _offset&lt;/em&gt;
 个字节，&lt;em&gt;offset&lt;/em&gt; 可正可负。&lt;/li&gt;
-&lt;li&gt;若 &lt;em&gt;whence&lt;/em&gt; 是 SEEK_END，则将该文件的偏移量设置为文件长度加上
-&lt;em&gt;offset&lt;/em&gt;，&lt;em&gt;offset&lt;/em&gt; 可正可负。&lt;/li&gt;
+&lt;li&gt;若 &lt;em&gt;whence&lt;/em&gt; 是 SEEK&lt;em&gt;END，则将该文件的偏移量设置为文件长度加上
+_offset&lt;/em&gt;，&lt;em&gt;offset&lt;/em&gt; 可正可负。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;通常，文件的当前偏移量应该是一个非负整数，但是，某些设备也可能允许负的偏移量。但对于普通文件，其偏移量必须是一个非负值。因为偏移量可能是负值，所以在比较
 lseek 的返回值时，不应检测它是否小于 0，而应该检测它是否等于 -1。&lt;br&gt;
@@ -186,7 +186,7 @@ lseek 仅将当前偏移量记录在内核中，它并不引起任何的 I/O
 &lt;li&gt;当从管道或 FIFO 读时，如若管道包含的字节少于所需的数量，那么 read
 将只返回实际可用的字节数。&lt;/li&gt;
 &lt;li&gt;当从某些面向记录的设备（如磁带）读时，一次最多返回一个记录。&lt;/li&gt;
-&lt;li&gt;当一信号造成终端，而已经读了部分数据量时。&lt;/li&gt;
+&lt;li&gt;当一信号造成中断，而已经读了部分数据量时。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;&lt;strong&gt;读操作从文件的当前偏移量开始，在成功返回之前，该偏移量将增加实际读到的字节数。&lt;/strong&gt;&lt;/p&gt;
 &lt;h3 id=&#34;七函数-write&#34;&gt;七、函数 write&lt;/h3&gt;
@@ -218,7 +218,7 @@ lseek 仅将当前偏移量记录在内核中，它并不引起任何的 I/O
 	srcset=&#34;https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6-i/o/c3-6_hu4e9f394eb546b90da41d62ff02f543f1_538719_480x0_resize_box_3.png 480w, https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6-i/o/c3-6_hu4e9f394eb546b90da41d62ff02f543f1_538719_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
-		alt=&#34;Architecture of the UNIX operating system&#34;
+		alt=&#34;c3-6&#34;
 	
 	
 		class=&#34;gallery-image&#34; 
@@ -230,7 +230,238 @@ lseek 仅将当前偏移量记录在内核中，它并不引起任何的 I/O
 时间的几个最小值差不多出现在 BUFFSIZE 为 4 096
 及以后得位置，继续增加缓冲区长度对此时间几乎没有影响。&lt;br&gt;
 大多数文件系统为改善性能都采用某种 &lt;strong&gt;预读（read ahead）&lt;/strong&gt;
-技术。当检测到正进行顺序读取时，系统就试图读入比应用要求的更多数据，并假想应用很快就会读这些数据。从图中可以看出，缓冲区长度小至 32 字节时的时钟时间与拥有较大缓冲区长度时的时钟时间几乎一样。&lt;/p&gt;
+技术。当检测到正进行顺序读取时，系统就试图读入比应用要求的更多数据，并假想应用很快就会读这些数据。从图中可以看出，缓冲区长度小至 32 字节时的时钟时间与拥有较大缓冲区长度时的时钟时间几乎一样。&lt;strong&gt;（局部性原理）&lt;/strong&gt;&lt;/p&gt;
+&lt;h3 id=&#34;九文件共享&#34;&gt;九、文件共享&lt;/h3&gt;
+&lt;p&gt;UNIX 系统支持在不同进程间共享打开文件。内核使用了
+3 种数据结构表示打开文件，它们之间的关系决定了在文件共享方面一个进程对另一个进程可能产生的影响。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;每个进程在进程表中都有一个记录项，记录项中包含一张打开文件描述符表，每个描述符表占用一项。与每个文件描述符关联的是：
+&lt;ol&gt;
+&lt;li&gt;文件描述符标志。&lt;/li&gt;
+&lt;li&gt;指向一个文件表项的指针。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;内核为所有打开文件维护一张文件表，每个文件表项包含：
+&lt;ol&gt;
+&lt;li&gt;文件状态标志（读、写、添写、同步和非阻塞等）&lt;/li&gt;
+&lt;li&gt;当前文件偏移量。&lt;/li&gt;
+&lt;li&gt;指向该文件 v 节点表项的指针。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;每个打开文件（或设备）都有一个 &lt;strong&gt;v 节点（v-node）&lt;/strong&gt; 结构。v
+节点包含了文件类型和对此文件进行各种操作函数的指针。对于大多数文件，v
+节点还包含了该文件的
+i 节点（i-node，索引节点）。这些信息是在打开文件时从磁盘读入内存的，所以，文件的所有相关信息都是随时可用的。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Linux 没有使用 v 节点，而是采用了一个与文件系统相关的
+i 节点和一个与文件系统无关的 i 节点。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;下图展示了一个进程打开多个文件的情况：
+&lt;img src=&#34;https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6-i/o/c3-7.png&#34;
+	width=&#34;1382&#34;
+	height=&#34;720&#34;
+	srcset=&#34;https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6-i/o/c3-7_hu2a55834c154bf0680d5ad62b8a37f2b0_352890_480x0_resize_box_3.png 480w, https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6-i/o/c3-7_hu2a55834c154bf0680d5ad62b8a37f2b0_352890_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;c3-7&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;191&#34;
+		data-flex-basis=&#34;460px&#34;
+	
+&gt;
+下图展示了多个进程打开同一文件的情况：
+&lt;img src=&#34;https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6-i/o/c3-8.png&#34;
+	width=&#34;1336&#34;
+	height=&#34;848&#34;
+	srcset=&#34;https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6-i/o/c3-8_hu841421f7cd1e2fe1d5b780642e7cf66a_372421_480x0_resize_box_3.png 480w, https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6-i/o/c3-8_hu841421f7cd1e2fe1d5b780642e7cf66a_372421_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;c3-8&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;157&#34;
+		data-flex-basis=&#34;378px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;打开该文件的每个进程都获得各自的一个文件表项，但对一个给定的文件只有一个
+v 节点表项。之所以每个进程都获得自己的文件表项，是因为这可以使每个进程都有它自己的对该文件的当前偏移量。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;注意，文件描述符标志和文件状态标志在作用范围方面的区别，前者只用于一个进程的一个描述符，而后者则应用于指向该给定文件表项的任何进程中的所有描述符。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;十原子操作&#34;&gt;十、原子操作&lt;/h3&gt;
+&lt;p&gt;一般而言，&lt;strong&gt;原子操作（atomic operation）&lt;/strong&gt;
+指的是由多步组成的一个操作。如果该操作原子的执行，则要么执行完所有步骤，要么
+一步也不执行，不可能只执行所有步骤中的一个子集。任何要求多于一个函数调用的操作都不是原子操作，因为在两个函数调用之间，内核有可能会临时挂起进程。&lt;/p&gt;
+&lt;h4 id=&#34;函数-pread-和-pwrite&#34;&gt;函数 pread 和 pwrite&lt;/h4&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;unistd.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;ssize_t&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;pread&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fd&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;buf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;size_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;nbytes&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;off_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;offset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                    &lt;span class=&#34;err&#34;&gt;返回值：读到的字节数，若已到文件尾，返回&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;；若出错，返回&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;ssize_t&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;pwrite&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fd&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;const&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;buf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;size_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;nbytes&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;off_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;offset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                            &lt;span class=&#34;err&#34;&gt;返回值：若成功，返回已写的字节数；若出错，返回&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;调用 pread 相当于调用 lseek 后调用 read，但是 pread
+又与这种顺序调用有下列重要区别：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;调用 pread 时，无法终端其定位和读操作。&lt;/li&gt;
+&lt;li&gt;不更新当前文件偏移量。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;调用 pwrite 相当于调用 lseek 后调用 write，但也与它们有类似区别。&lt;/p&gt;
+&lt;h3 id=&#34;十一函数-dup-和-dup2&#34;&gt;十一、函数 dup 和 dup2&lt;/h3&gt;
+&lt;p&gt;下面两个函数都可以用来复制一个现有的文件描述符：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;dup == duplicate 复制&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;unistd.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;dup&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fd&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;dup2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fd&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fd2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                    &lt;span class=&#34;err&#34;&gt;两函数的返回值：若成功，返回新的文件描述符；若出错，返回&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;由 dup 返回的新描述符一定是当前可用文件描述符中的最小值（open 和 openat
+同样返回当前可用文件描述符中的最小值）。对于 dup2，可以用 &lt;em&gt;fd2&lt;/em&gt;
+参数指定新的描述符值。如果 &lt;em&gt;fd2&lt;/em&gt; 已经打开，则先将其关闭。如果 &lt;em&gt;fd2&lt;/em&gt; 等于
+&lt;em&gt;fd&lt;/em&gt;，则 dup2 返回 &lt;em&gt;fd2&lt;/em&gt;，然后并不关闭它。否则，&lt;em&gt;fd2&lt;/em&gt; 的 FD&lt;em&gt;CLOEXEC
+文件描述符标志就被清除，这样 _fd2&lt;/em&gt; 在进程调用 exec 时是打开状态。&lt;/p&gt;
+&lt;p&gt;下图展示了 dup(1) 之后的情况：
+&lt;img src=&#34;https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6-i/o/c3-9.png&#34;
+	width=&#34;1404&#34;
+	height=&#34;528&#34;
+	srcset=&#34;https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6-i/o/c3-9_hu80439c6e709f946ca7c44aa562ae05dc_245324_480x0_resize_box_3.png 480w, https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6-i/o/c3-9_hu80439c6e709f946ca7c44aa562ae05dc_245324_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;c3-9&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;265&#34;
+		data-flex-basis=&#34;638px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;十二函数-syncfsync-和-fdatasync&#34;&gt;十二、函数 sync、fsync 和 fdatasync&lt;/h3&gt;
+&lt;p&gt;传统的 UNIX 系统实现在内核中设有缓冲区高速缓存或页高速缓存，大多数磁盘 I/O
+都通过缓冲区进行。当我们向文件写入数据时，内核通常先将数据复制到缓冲区中，然后排入队列，晚些时候再写入磁盘。这种方式被称为
+&lt;strong&gt;延迟写（delayed write）&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;通常，当内核需要重用缓冲区来存放其他磁盘块数据时，它会把所有延迟写数据写入磁盘，为了保证磁盘上实际文件系统与缓冲区内容的一致性，UNIX
+系统提供了 sync、fsync 和 fdatasync 三个函数。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;unistd.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;fsync&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fd&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;fdatasync&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fd&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                                        &lt;span class=&#34;err&#34;&gt;返回值：若成功，返回&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;；若出错，返回&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;sync&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;code&gt;sync&lt;/code&gt;：只是将所有修改过的块缓冲区排入写队列，然后就返回，它并不等待实际写磁盘操作结束。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;fsync&lt;/code&gt;：只对由文件描述符 &lt;em&gt;fd&lt;/em&gt;
+指定的一个文件起作用，并且等待写磁盘操作结束才返回。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;fdatasync&lt;/code&gt;：类似于 fsync，但它只影响文件的数据部分。而除数据外，fsync
+还会同步更新文件的属性。&lt;/p&gt;
+&lt;h3 id=&#34;十三函数-fcntl&#34;&gt;十三、函数 fcntl&lt;/h3&gt;
+&lt;p&gt;fcntl 函数可以改变已经打开文件的属性。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;fcntl.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;fcntl&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fd&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;cmd&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;...&lt;/span&gt; &lt;span class=&#34;cm&#34;&gt;/* int arg */&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                                &lt;span class=&#34;err&#34;&gt;返回值：若成功，则依赖于&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;cmd&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;；若出错，返回&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;根据 &lt;em&gt;cmd&lt;/em&gt; 参数的不同，fcntl 函数有以下 5 种功能：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;复制一个已有的描述符（&lt;em&gt;cmd&lt;/em&gt; = F_DUPFD 或 F_DUPFD_CLOEXEC）。&lt;/li&gt;
+&lt;li&gt;获取/设置文件描述符标志（&lt;em&gt;cmd&lt;/em&gt; = F_GETFD 或 F_SETFD）。&lt;/li&gt;
+&lt;li&gt;获取/设置文件状态标志（&lt;em&gt;cmd&lt;/em&gt; = F_GETFL 或 F_SETFL）。&lt;/li&gt;
+&lt;li&gt;获取/设置异步 I/O 所有权（&lt;em&gt;cmd&lt;/em&gt; = F_GETOWN 或 F_SETOWN）。&lt;/li&gt;
+&lt;li&gt;获取/设置记录锁（&lt;em&gt;cmd&lt;/em&gt; = F_GETLK、F_SETLK 或 F_SETLKW）。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;十四函数-ioctl&#34;&gt;十四、函数 ioctl&lt;/h3&gt;
+&lt;p&gt;不能用本章其他函数表示的 I/O 操作都可以用 ioctl 函数表示，终端 I/O 是使用 ioctl
+函数最多的地方。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;unistd.h&amp;gt;     /* System V */&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;sys/ioctl.h&amp;gt;  /* BSD and Linux */&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;ioctl&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fd&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;request&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;...);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                                    &lt;span class=&#34;err&#34;&gt;返回值：若出错，返回&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;；若成功，返回其他值&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;十五devfd&#34;&gt;十五、/dev/fd&lt;/h3&gt;
+&lt;p&gt;较新的系统中都提供了 &lt;strong&gt;/dev/fd&lt;/strong&gt; 目录，打开文件 /dev/fd/n 相当于复制描述符
+n，前提是描述符 n 是打开的。&lt;/p&gt;
 </description>
         </item>
         <item>
