@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='一、函数 stat、fstat、fstatat 和 lstat 1 2 3 4 5 6 7 8 9 10 11 12 #include &amp;lt;sys/stat.h&amp;gt; int stat(const char *restrict pathname, struct stat *restrict buf); int fstat(int fd, struct stat *buf); int lstat(const char *restrict pathname, struct stat *restrict buf); int fstatat(int fd, const char *restrict pathname, struct stat *restrict buf, int flag); 所有 4 个函数的返回值：若成功，返回 0；若出错，返回 -1 stat：一旦给出 pathname ，将返回与该命名文件有关的信息结构。
+fstat：获得在 fd 上打开文件的有关信息。
+lstat：类似于 stat，但当命名文件是一个符号链接时，lstat 返回该符号链接的有关信息，而不是由该符号链接引用的文件的信息。
+fstatat：为一个相当于当前打开目录（由 fd 参数指向）的路径名返回文件统计信息，flag 参数控制着是否跟随者一个符号链接。当 AT_SYMLINK_NOFOLLOW 标志被设置时，fstatat 不会跟随符号链接。'>
+<title>文件和目录</title>
+
+<link rel='canonical' href='https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/'>
+
+<link rel="stylesheet" href="/scss/style.min.8191399262444ab68b72a18c97392f5349be20a1615d77445be51e974c144cff.css"><meta property='og:title' content='文件和目录'>
+<meta property='og:description' content='一、函数 stat、fstat、fstatat 和 lstat 1 2 3 4 5 6 7 8 9 10 11 12 #include &amp;lt;sys/stat.h&amp;gt; int stat(const char *restrict pathname, struct stat *restrict buf); int fstat(int fd, struct stat *buf); int lstat(const char *restrict pathname, struct stat *restrict buf); int fstatat(int fd, const char *restrict pathname, struct stat *restrict buf, int flag); 所有 4 个函数的返回值：若成功，返回 0；若出错，返回 -1 stat：一旦给出 pathname ，将返回与该命名文件有关的信息结构。
+fstat：获得在 fd 上打开文件的有关信息。
+lstat：类似于 stat，但当命名文件是一个符号链接时，lstat 返回该符号链接的有关信息，而不是由该符号链接引用的文件的信息。
+fstatat：为一个相当于当前打开目录（由 fd 参数指向）的路径名返回文件统计信息，flag 参数控制着是否跟随者一个符号链接。当 AT_SYMLINK_NOFOLLOW 标志被设置时，fstatat 不会跟随符号链接。'>
+<meta property='og:url' content='https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/'>
+<meta property='og:site_name' content='imxiejie'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2023-02-10T16:42:32&#43;08:00'/><meta property='article:modified_time' content='2023-02-10T16:42:32&#43;08:00'/><meta property='og:image' content='https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/unix-book.jpeg' />
+<meta name="twitter:title" content="文件和目录">
+<meta name="twitter:description" content="一、函数 stat、fstat、fstatat 和 lstat 1 2 3 4 5 6 7 8 9 10 11 12 #include &amp;lt;sys/stat.h&amp;gt; int stat(const char *restrict pathname, struct stat *restrict buf); int fstat(int fd, struct stat *buf); int lstat(const char *restrict pathname, struct stat *restrict buf); int fstatat(int fd, const char *restrict pathname, struct stat *restrict buf, int flag); 所有 4 个函数的返回值：若成功，返回 0；若出错，返回 -1 stat：一旦给出 pathname ，将返回与该命名文件有关的信息结构。
+fstat：获得在 fd 上打开文件的有关信息。
+lstat：类似于 stat，但当命名文件是一个符号链接时，lstat 返回该符号链接的有关信息，而不是由该符号链接引用的文件的信息。
+fstatat：为一个相当于当前打开目录（由 fd 参数指向）的路径名返回文件统计信息，flag 参数控制着是否跟随者一个符号链接。当 AT_SYMLINK_NOFOLLOW 标志被设置时，fstatat 不会跟随符号链接。"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/unix-book.jpeg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu87865fc6accf0c3d769e896d75694e81_162656_300x0_resize_q75_box.jpeg" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">imxiejie</a></h1>
+            <h2 class="site-description">Somebody has to win, so why not be me?</h2>
+        </div>
+    </header><ol class="social-menu">
+            
+                <li>
+                    <a 
+                        href='https://github.com/jiennyx'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>Dark Mode</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li>
+      <ol>
+        <li><a href="#一函数-statfstatfstatat-和-lstat">一、函数 stat、fstat、fstatat 和 lstat</a></li>
+        <li><a href="#二文件类型">二、文件类型</a></li>
+        <li><a href="#三设置用户-id-和-设置组-id">三、设置用户 ID 和 设置组 ID</a></li>
+        <li><a href="#四文件访问权限">四、文件访问权限</a></li>
+        <li><a href="#五新文件和目录的所有权">五、新文件和目录的所有权</a></li>
+        <li><a href="#六函数-access-和-faccessat">六、函数 access 和 faccessat</a></li>
+        <li><a href="#七函数-umask">七、函数 umask</a></li>
+        <li><a href="#八函数-chmodfchmod-和-fchmodat">八、函数 chmod、fchmod 和 fchmodat</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/">
+                <img src="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_800x0_resize_q75_box.jpeg"
+                        srcset="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_800x0_resize_q75_box.jpeg 800w, /p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_1600x0_resize_q75_box.jpeg 1600w"
+                        width="800" 
+                        height="298" 
+                        loading="lazy"
+                        alt="Featured image of post 文件和目录" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/unix-%E7%8E%AF%E5%A2%83%E9%AB%98%E7%BA%A7%E7%BC%96%E7%A8%8B/" >
+                UNIX 环境高级编程
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/">文件和目录</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Feb 10, 2023</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    2 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h3 id="一函数-statfstatfstatat-和-lstat">一、函数 stat、fstat、fstatat 和 lstat</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/stat.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">stat</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">pathname</span><span class="p">,</span> <span class="k">struct</span> <span class="n">stat</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">buf</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fstat</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="k">struct</span> <span class="n">stat</span> <span class="o">*</span><span class="n">buf</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">lstat</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">pathname</span><span class="p">,</span> <span class="k">struct</span> <span class="n">stat</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">buf</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fstatat</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">pathname</span><span class="p">,</span> <span class="k">struct</span> <span class="n">stat</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">buf</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="n">flag</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                        <span class="err">所有</span> <span class="mi">4</span> <span class="err">个函数的返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>stat</code>：一旦给出 <em>pathname</em> ，将返回与该命名文件有关的信息结构。</p>
+<p><code>fstat</code>：获得在 <em>fd</em> 上打开文件的有关信息。</p>
+<p><code>lstat</code>：类似于 stat，但当命名文件是一个符号链接时，lstat
+返回该符号链接的有关信息，而不是由该符号链接引用的文件的信息。</p>
+<p><code>fstatat</code>：为一个相当于当前打开目录（由 <em>fd</em>
+参数指向）的路径名返回文件统计信息，<em>flag</em> 参数控制着是否跟随者一个符号链接。当
+AT_SYMLINK_NOFOLLOW 标志被设置时，fstatat 不会跟随符号链接。</p>
+<h3 id="二文件类型">二、文件类型</h3>
+<p>文件类型包含以下几种：</p>
+<ol>
+<li><strong>普通文件（regular file）</strong>。这种文件包含了某种形式的数据，至于这种数据是文本还是二进制数据，对于
+UNIX 内核毫无区别。对普通文件内容的解释由处理该文件的应用程序进行。</li>
+<li><strong>目录文件（directory
+file）</strong>。这种文件包含了其他文件的名字以及指向这些文件有关信息的指针。对一个目录文件具有读权限的任一进程都可以读该目录的内容，但只有内核才可以直接写目录文件。</li>
+<li><strong>块特殊文件（block special
+file）</strong>。这种类型的文件提供对设备（如磁盘）带缓冲的访问，每次访问以固定长度进行。</li>
+<li><strong>字符特殊文件（character special
+file）</strong>。这种类型的文件提供对设备不带缓冲的访问，每次访问长度可变。系统中的设备要么是块特殊文件，要么是字符特殊文件。</li>
+<li><strong>FIFO</strong>。这种类型的文件用于进程间通信，有时也称为 <strong>命名管道（named pipe）</strong>。</li>
+<li><strong>套接字（socket）</strong>。这种类型的文件用于进程间的网络通信，也可用于一台宿主机上进程间的非网络通信。</li>
+<li><strong>符号链接（symbolic link）</strong>。这种类型的文件指向另一个文件。</li>
+</ol>
+<h3 id="三设置用户-id-和-设置组-id">三、设置用户 ID 和 设置组 ID</h3>
+<p><img src="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-5.png"
+	width="1890"
+	height="588"
+	srcset="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-5_hu98ea0451090a4c663fcd2e3ad39d393b_123787_480x0_resize_box_3.png 480w, /p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-5_hu98ea0451090a4c663fcd2e3ad39d393b_123787_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="c4-5"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="321"
+		data-flex-basis="771px"
+	
+></p>
+<ul>
+<li><strong>实际用户 ID</strong> 和 <strong>实际组 ID</strong>
+标识我们究竟是谁。这两个字段在登录时取自口令文件中的登录项。</li>
+<li><strong>有效用户 ID</strong>、<strong>有效组 ID</strong> 和 <strong>附属组 ID</strong> 决定了我们的文件访问权限。</li>
+<li><strong>保存的设置用户 ID</strong> 和 <strong>保存的设置组 ID</strong> 在执行一个程序时包含了有效用户 ID
+和有效组 ID 的副本。</li>
+</ul>
+<p>通常，执行一个程序文件时，进程的有效用户 ID 就是实际用户 ID，有效组 ID
+就是实际组 ID。但是，可以在 <strong>文件模式字（st_mode）</strong>
+中设置一个特殊标志。其含义是：“当执行此文件时，将进程的有效用户 ID
+设置为文件所有者的用户
+ID（st_uid）”，与此类似，在文件模式字中可以设置另一位，它将执行此文件的进程的有效组
+ID 设置为该文件的组所有者 ID（st_gid）。在文件模式字中，这两位被称为
+<strong>设置用户 ID（set-user-ID）位</strong> 和 <strong>设置组 ID（set-group-ID）位</strong>。</p>
+<p>例如：如果文件所有者是超级用户，而且设置了该文件的设置用户 ID
+位，那么当该程序文件由一个进程执行时，该进程具有超级用户权限。不管执行此文件的进程的实际用户
+ID 是什么，都会是这样。</p>
+<h3 id="四文件访问权限">四、文件访问权限</h3>
+<p>st_mode 也包含了对文件的访问权限位，下图是 9 个权限访问位：</p>
+<p><img src="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-6.png"
+	width="1428"
+	height="776"
+	srcset="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-6_hub5b028cb9a1103db5642baae89d1acc2_131508_480x0_resize_box_3.png 480w, /p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-6_hub5b028cb9a1103db5642baae89d1acc2_131508_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="c4-6"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="184"
+		data-flex-basis="441px"
+	
+></p>
+<blockquote>
+<p>通常使用 u 表示用户（所有者），用 g 表示组，用 o 表示其他。</p>
+</blockquote>
+<p>各种访问权限使用如下：</p>
+<ul>
+<li>当我们用名字打开任一类型的文件时，对该名字的包含的每一个目录，包括它可能隐含的当前工作目录都应该具有执行权限。
+<blockquote>
+<p>故对于目录的执行权限位为什么常被称为搜索位。</p>
+</blockquote>
+</li>
+<li>对于一个文件的读权限决定了我们是否能够打开现有文件进行读操作。</li>
+<li>对于一个文件的写权限决定了我们时候能够打开现有文件进行写操作。</li>
+<li>为了在 open 函数中对一个文件指定 O_TRUNC 标志，必须对该文件具有写权限。</li>
+<li>为了在一个目录中创建一个文件，必须对该目录具有写权限和执行权限。</li>
+<li>为了删除一个现有文件，必须对包含该文件的目录具有写权限和执行权限。对该文件本身不需要有读、写权限。</li>
+<li>如果用 7 个 exec
+函数中的任何一个执行文件，必须对该文件具有执行权限。该文件还必须是普通文件。</li>
+</ul>
+<p>进程每次打开、创建或删除一个文件时，内核就进行文件访问权限测试。而这种测试可能涉及文件的所有者（st_uid 和 st_gid）、进程的有效 ID（有效用户 ID 和 有效组 ID）以及进程的附属组 ID。两个所有者 ID 是文件的性质，而两个有效 ID 和 附属组 ID 是进程的性质。</p>
+<p>内核进行权限测试的流程如下：</p>
+<ol>
+<li>若进程的有效用户 ID 是 0（超级用户），则允许访问。</li>
+<li>若进程的有效用户 ID 等于文件的所有者
+ID，如果适当的访问权限被设置，则允许访问；否则拒绝访问。</li>
+<li>若进程的有效组 ID 或进程的附属组 ID 之一等于文件的组
+ID，如果适当的访问权限被设置，则允许访问；否则拒绝访问。</li>
+<li>若其他用户适当的访问权限被设置，则允许访问；否则拒绝访问。</li>
+</ol>
+<h3 id="五新文件和目录的所有权">五、新文件和目录的所有权</h3>
+<p>新文件的用户 ID 设置为进程的有效用户 ID。</p>
+<p>而对于新文件的组 ID：</p>
+<ol>
+<li>新文件的组 ID 可以是进程的有效组 ID。</li>
+<li>新文件的组 ID 可以是它所在目录的组 ID。</li>
+</ol>
+<blockquote>
+<p>对于部分系统，默认情况下，新文件的组 ID 取决于它所在的目录的设置组 ID
+位是否被设置。如果该位被设置，则新文件的组 ID 设置为目录的组
+ID；否则设置为进程的有效组 ID。（目录的组 ID 优先于进程的组 ID）</p>
+</blockquote>
+<h3 id="六函数-access-和-faccessat">六、函数 access 和 faccessat</h3>
+<p>当用 open 函数打开一个文件时，内核以进程的有效用户 ID 和有效组 ID
+为基础执行其访问权限测试。如果想按实际用户 ID 和实际组 ID
+进行访问权限测试，可以使用 access 和 faccessat 函数：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">access</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">,</span> <span class="kt">int</span> <span class="n">mode</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">faccessat</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">,</span> <span class="kt">int</span> <span class="n">mode</span><span class="p">,</span> <span class="kt">int</span> <span class="n">flag</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                            <span class="err">两个函数的返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><em>flag</em> 参数可以用于改变 faccessat 的行为，如果 <em>flag</em> 设置为
+AT_EACCESS，访问检查用的是调用进程的有效用户 ID 和有效组 ID，而不是实际用户 ID
+和实际组 ID。</p>
+<h3 id="七函数-umask">七、函数 umask</h3>
+<p>umask 函数为进程设置文件模式创建屏蔽字，并返回之前的值。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/stat.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">mode_t</span> <span class="nf">umask</span><span class="p">(</span><span class="kt">mode_t</span> <span class="n">cmask</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                            <span class="err">返回值：之前的文件模式创建屏蔽字</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在文件模式创建屏蔽字中为 1 的位，在文件 mode
+中的相应位一定会被关闭。更改进程的文件模式创建屏蔽字并不影响其父进程（通常是 shell）的屏蔽字。</p>
+<h3 id="八函数-chmodfchmod-和-fchmodat">八、函数 chmod、fchmod 和 fchmodat</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/stat.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">chmod</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">,</span> <span class="kt">mode_t</span> <span class="n">mode</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fchmod</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="kt">mode_t</span> <span class="n">mode</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fchmodat</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">,</span> <span class="kt">mode_t</span> <span class="n">mode</span><span class="p">,</span> <span class="kt">int</span> <span class="n">flag</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                <span class="mi">3</span> <span class="err">个函数返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>为了改变一个文件的权限位，进程的有效用户 ID 必须等于文件的所有者
+ID，或者该进程必须拥有超级用户权限。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">Related content</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/%E6%96%87%E4%BB%B6-i/o/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E6%96%87%E4%BB%B6-i/o/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 文件 I/O"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">文件 I/O</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">
+        
+        
+            <div class="article-image">
+                <img src="/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post UNIX 基础知识"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">UNIX 基础知识</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="jiennyx/jiennyx.github.io"
+        issue-term="pathname"
+        
+        label="Comment"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+        2023 imxiejie
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.16.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

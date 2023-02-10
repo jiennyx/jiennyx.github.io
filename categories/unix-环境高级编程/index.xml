@@ -6,7 +6,230 @@
         <description>Recent content in UNIX 环境高级编程 on imxiejie</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>en-us</language>
-        <lastBuildDate>Thu, 09 Feb 2023 15:18:07 +0800</lastBuildDate><atom:link href="https://www.imxiejie.me/categories/unix-%E7%8E%AF%E5%A2%83%E9%AB%98%E7%BA%A7%E7%BC%96%E7%A8%8B/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Fri, 10 Feb 2023 16:42:32 +0800</lastBuildDate><atom:link href="https://www.imxiejie.me/categories/unix-%E7%8E%AF%E5%A2%83%E9%AB%98%E7%BA%A7%E7%BC%96%E7%A8%8B/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>文件和目录</title>
+        <link>https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/</link>
+        <pubDate>Fri, 10 Feb 2023 16:42:32 +0800</pubDate>
+        
+        <guid>https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/</guid>
+        <description>&lt;img src="https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/unix-book.jpeg" alt="Featured image of post 文件和目录" /&gt;&lt;h3 id=&#34;一函数-statfstatfstatat-和-lstat&#34;&gt;一、函数 stat、fstat、fstatat 和 lstat&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;sys/stat.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;stat&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;const&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;char&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;kr&#34;&gt;restrict&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;pathname&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;stat&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;kr&#34;&gt;restrict&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;buf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;fstat&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fd&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;stat&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;buf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;lstat&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;const&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;char&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;kr&#34;&gt;restrict&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;pathname&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;stat&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;kr&#34;&gt;restrict&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;buf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;fstatat&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fd&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;const&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;char&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;kr&#34;&gt;restrict&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;pathname&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;stat&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;kr&#34;&gt;restrict&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;buf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;flag&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                        &lt;span class=&#34;err&#34;&gt;所有&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;4&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;个函数的返回值：若成功，返回&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;；若出错，返回&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;code&gt;stat&lt;/code&gt;：一旦给出 &lt;em&gt;pathname&lt;/em&gt; ，将返回与该命名文件有关的信息结构。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;fstat&lt;/code&gt;：获得在 &lt;em&gt;fd&lt;/em&gt; 上打开文件的有关信息。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;lstat&lt;/code&gt;：类似于 stat，但当命名文件是一个符号链接时，lstat
+返回该符号链接的有关信息，而不是由该符号链接引用的文件的信息。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;fstatat&lt;/code&gt;：为一个相当于当前打开目录（由 &lt;em&gt;fd&lt;/em&gt;
+参数指向）的路径名返回文件统计信息，&lt;em&gt;flag&lt;/em&gt; 参数控制着是否跟随者一个符号链接。当
+AT_SYMLINK_NOFOLLOW 标志被设置时，fstatat 不会跟随符号链接。&lt;/p&gt;
+&lt;h3 id=&#34;二文件类型&#34;&gt;二、文件类型&lt;/h3&gt;
+&lt;p&gt;文件类型包含以下几种：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;普通文件（regular file）&lt;/strong&gt;。这种文件包含了某种形式的数据，至于这种数据是文本还是二进制数据，对于
+UNIX 内核毫无区别。对普通文件内容的解释由处理该文件的应用程序进行。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;目录文件（directory
+file）&lt;/strong&gt;。这种文件包含了其他文件的名字以及指向这些文件有关信息的指针。对一个目录文件具有读权限的任一进程都可以读该目录的内容，但只有内核才可以直接写目录文件。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;块特殊文件（block special
+file）&lt;/strong&gt;。这种类型的文件提供对设备（如磁盘）带缓冲的访问，每次访问以固定长度进行。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;字符特殊文件（character special
+file）&lt;/strong&gt;。这种类型的文件提供对设备不带缓冲的访问，每次访问长度可变。系统中的设备要么是块特殊文件，要么是字符特殊文件。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;FIFO&lt;/strong&gt;。这种类型的文件用于进程间通信，有时也称为 &lt;strong&gt;命名管道（named pipe）&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;套接字（socket）&lt;/strong&gt;。这种类型的文件用于进程间的网络通信，也可用于一台宿主机上进程间的非网络通信。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;符号链接（symbolic link）&lt;/strong&gt;。这种类型的文件指向另一个文件。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;三设置用户-id-和-设置组-id&#34;&gt;三、设置用户 ID 和 设置组 ID&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-5.png&#34;
+	width=&#34;1890&#34;
+	height=&#34;588&#34;
+	srcset=&#34;https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-5_hu98ea0451090a4c663fcd2e3ad39d393b_123787_480x0_resize_box_3.png 480w, https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-5_hu98ea0451090a4c663fcd2e3ad39d393b_123787_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;c4-5&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;321&#34;
+		data-flex-basis=&#34;771px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;实际用户 ID&lt;/strong&gt; 和 &lt;strong&gt;实际组 ID&lt;/strong&gt;
+标识我们究竟是谁。这两个字段在登录时取自口令文件中的登录项。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;有效用户 ID&lt;/strong&gt;、&lt;strong&gt;有效组 ID&lt;/strong&gt; 和 &lt;strong&gt;附属组 ID&lt;/strong&gt; 决定了我们的文件访问权限。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;保存的设置用户 ID&lt;/strong&gt; 和 &lt;strong&gt;保存的设置组 ID&lt;/strong&gt; 在执行一个程序时包含了有效用户 ID
+和有效组 ID 的副本。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;通常，执行一个程序文件时，进程的有效用户 ID 就是实际用户 ID，有效组 ID
+就是实际组 ID。但是，可以在 &lt;strong&gt;文件模式字（st_mode）&lt;/strong&gt;
+中设置一个特殊标志。其含义是：“当执行此文件时，将进程的有效用户 ID
+设置为文件所有者的用户
+ID（st_uid）”，与此类似，在文件模式字中可以设置另一位，它将执行此文件的进程的有效组
+ID 设置为该文件的组所有者 ID（st_gid）。在文件模式字中，这两位被称为
+&lt;strong&gt;设置用户 ID（set-user-ID）位&lt;/strong&gt; 和 &lt;strong&gt;设置组 ID（set-group-ID）位&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;例如：如果文件所有者是超级用户，而且设置了该文件的设置用户 ID
+位，那么当该程序文件由一个进程执行时，该进程具有超级用户权限。不管执行此文件的进程的实际用户
+ID 是什么，都会是这样。&lt;/p&gt;
+&lt;h3 id=&#34;四文件访问权限&#34;&gt;四、文件访问权限&lt;/h3&gt;
+&lt;p&gt;st_mode 也包含了对文件的访问权限位，下图是 9 个权限访问位：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-6.png&#34;
+	width=&#34;1428&#34;
+	height=&#34;776&#34;
+	srcset=&#34;https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-6_hub5b028cb9a1103db5642baae89d1acc2_131508_480x0_resize_box_3.png 480w, https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-6_hub5b028cb9a1103db5642baae89d1acc2_131508_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;c4-6&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;184&#34;
+		data-flex-basis=&#34;441px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;通常使用 u 表示用户（所有者），用 g 表示组，用 o 表示其他。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;各种访问权限使用如下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;当我们用名字打开任一类型的文件时，对该名字的包含的每一个目录，包括它可能隐含的当前工作目录都应该具有执行权限。
+&lt;blockquote&gt;
+&lt;p&gt;故对于目录的执行权限位为什么常被称为搜索位。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/li&gt;
+&lt;li&gt;对于一个文件的读权限决定了我们是否能够打开现有文件进行读操作。&lt;/li&gt;
+&lt;li&gt;对于一个文件的写权限决定了我们时候能够打开现有文件进行写操作。&lt;/li&gt;
+&lt;li&gt;为了在 open 函数中对一个文件指定 O_TRUNC 标志，必须对该文件具有写权限。&lt;/li&gt;
+&lt;li&gt;为了在一个目录中创建一个文件，必须对该目录具有写权限和执行权限。&lt;/li&gt;
+&lt;li&gt;为了删除一个现有文件，必须对包含该文件的目录具有写权限和执行权限。对该文件本身不需要有读、写权限。&lt;/li&gt;
+&lt;li&gt;如果用 7 个 exec
+函数中的任何一个执行文件，必须对该文件具有执行权限。该文件还必须是普通文件。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;进程每次打开、创建或删除一个文件时，内核就进行文件访问权限测试。而这种测试可能涉及文件的所有者（st_uid 和 st_gid）、进程的有效 ID（有效用户 ID 和 有效组 ID）以及进程的附属组 ID。两个所有者 ID 是文件的性质，而两个有效 ID 和 附属组 ID 是进程的性质。&lt;/p&gt;
+&lt;p&gt;内核进行权限测试的流程如下：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;若进程的有效用户 ID 是 0（超级用户），则允许访问。&lt;/li&gt;
+&lt;li&gt;若进程的有效用户 ID 等于文件的所有者
+ID，如果适当的访问权限被设置，则允许访问；否则拒绝访问。&lt;/li&gt;
+&lt;li&gt;若进程的有效组 ID 或进程的附属组 ID 之一等于文件的组
+ID，如果适当的访问权限被设置，则允许访问；否则拒绝访问。&lt;/li&gt;
+&lt;li&gt;若其他用户适当的访问权限被设置，则允许访问；否则拒绝访问。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;五新文件和目录的所有权&#34;&gt;五、新文件和目录的所有权&lt;/h3&gt;
+&lt;p&gt;新文件的用户 ID 设置为进程的有效用户 ID。&lt;/p&gt;
+&lt;p&gt;而对于新文件的组 ID：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;新文件的组 ID 可以是进程的有效组 ID。&lt;/li&gt;
+&lt;li&gt;新文件的组 ID 可以是它所在目录的组 ID。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;对于部分系统，默认情况下，新文件的组 ID 取决于它所在的目录的设置组 ID
+位是否被设置。如果该位被设置，则新文件的组 ID 设置为目录的组
+ID；否则设置为进程的有效组 ID。（目录的组 ID 优先于进程的组 ID）&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;六函数-access-和-faccessat&#34;&gt;六、函数 access 和 faccessat&lt;/h3&gt;
+&lt;p&gt;当用 open 函数打开一个文件时，内核以进程的有效用户 ID 和有效组 ID
+为基础执行其访问权限测试。如果想按实际用户 ID 和实际组 ID
+进行访问权限测试，可以使用 access 和 faccessat 函数：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;unistd.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;access&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;const&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;char&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;pathname&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;mode&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;faccessat&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fd&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;const&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;char&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;pathname&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;mode&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;flag&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                            &lt;span class=&#34;err&#34;&gt;两个函数的返回值：若成功，返回&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;；若出错，返回&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;em&gt;flag&lt;/em&gt; 参数可以用于改变 faccessat 的行为，如果 &lt;em&gt;flag&lt;/em&gt; 设置为
+AT_EACCESS，访问检查用的是调用进程的有效用户 ID 和有效组 ID，而不是实际用户 ID
+和实际组 ID。&lt;/p&gt;
+&lt;h3 id=&#34;七函数-umask&#34;&gt;七、函数 umask&lt;/h3&gt;
+&lt;p&gt;umask 函数为进程设置文件模式创建屏蔽字，并返回之前的值。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;sys/stat.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;mode_t&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;umask&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;mode_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;cmask&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                                            &lt;span class=&#34;err&#34;&gt;返回值：之前的文件模式创建屏蔽字&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;在文件模式创建屏蔽字中为 1 的位，在文件 mode
+中的相应位一定会被关闭。更改进程的文件模式创建屏蔽字并不影响其父进程（通常是 shell）的屏蔽字。&lt;/p&gt;
+&lt;h3 id=&#34;八函数-chmodfchmod-和-fchmodat&#34;&gt;八、函数 chmod、fchmod 和 fchmodat&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;sys/stat.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;chmod&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;const&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;char&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;pathname&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;mode_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;mode&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;fchmod&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fd&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;mode_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;mode&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;fchmodat&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fd&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;const&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;char&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;pathname&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;mode_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;mode&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;flag&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                                &lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;个函数返回值：若成功，返回&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;；若出错，返回&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;为了改变一个文件的权限位，进程的有效用户 ID 必须等于文件的所有者
+ID，或者该进程必须拥有超级用户权限。&lt;/p&gt;
+</description>
+        </item>
+        <item>
         <title>文件 I/O</title>
         <link>https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6-i/o/</link>
         <pubDate>Thu, 09 Feb 2023 15:18:07 +0800</pubDate>
