@@ -6,7 +6,23 @@
         <description>Recent content in Categories on imxiejie</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>en-us</language>
-        <lastBuildDate>Fri, 10 Feb 2023 16:42:32 +0800</lastBuildDate><atom:link href="https://www.imxiejie.me/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Sat, 11 Feb 2023 21:02:47 +0800</lastBuildDate><atom:link href="https://www.imxiejie.me/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>MySQL</title>
+        <link>https://www.imxiejie.me/categories/mysql/</link>
+        <pubDate>Sat, 11 Feb 2023 21:02:47 +0800</pubDate>
+        
+        <guid>https://www.imxiejie.me/categories/mysql/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>数据库</title>
+        <link>https://www.imxiejie.me/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/</link>
+        <pubDate>Sat, 11 Feb 2023 21:02:47 +0800</pubDate>
+        
+        <guid>https://www.imxiejie.me/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/</guid>
+        <description></description>
+        </item>
+        <item>
         <title>UNIX 环境高级编程</title>
         <link>https://www.imxiejie.me/categories/unix-%E7%8E%AF%E5%A2%83%E9%AB%98%E7%BA%A7%E7%BC%96%E7%A8%8B/</link>
         <pubDate>Fri, 10 Feb 2023 16:42:32 +0800</pubDate>
