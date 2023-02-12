@@ -224,6 +224,26 @@ fstatat：为一个相当于当前打开目录（由 fd 参数指向）的路径
         <li><a href="#六函数-access-和-faccessat">六、函数 access 和 faccessat</a></li>
         <li><a href="#七函数-umask">七、函数 umask</a></li>
         <li><a href="#八函数-chmodfchmod-和-fchmodat">八、函数 chmod、fchmod 和 fchmodat</a></li>
+        <li><a href="#九黏着位-s_isvtx">九、黏着位 S_ISVTX</a></li>
+        <li><a href="#十函数-chownfchownfchownat-和-lchown">十、函数 chown、fchown、fchownat 和 lchown</a></li>
+        <li><a href="#十一文件长度">十一、文件长度</a>
+          <ol>
+            <li><a href="#文件空洞">文件空洞</a></li>
+          </ol>
+        </li>
+        <li><a href="#十二文件截断">十二、文件截断</a></li>
+        <li><a href="#十三文件系统">十三、文件系统</a></li>
+        <li><a href="#十四函数-linklinkatunlinkunlinkat-和-remove">十四、函数 link、linkat、unlink、unlinkat 和 remove</a></li>
+        <li><a href="#十五函数-rename-和-renameat">十五、函数 rename 和 renameat</a></li>
+        <li><a href="#十六符号链接">十六、符号链接</a></li>
+        <li><a href="#十七创建和读取符号链接">十七、创建和读取符号链接</a></li>
+        <li><a href="#十八文件的时间">十八、文件的时间</a></li>
+        <li><a href="#十九函数-futimensutimensat-和-utimes">十九、函数 futimens、utimensat 和 utimes</a></li>
+        <li><a href="#二十函数-mkdirmkdirat-和-rmdir">二十、函数 mkdir、mkdirat 和 rmdir</a></li>
+        <li><a href="#二十一读目录">二十一、读目录</a></li>
+        <li><a href="#二十二函数-chdirfchdir-和-getcwd">二十二、函数 chdir、fchdir 和 getcwd</a></li>
+        <li><a href="#二十三设备特殊文件">二十三、设备特殊文件</a></li>
+        <li><a href="#二十四文件权限位小结">二十四、文件权限位小结</a></li>
       </ol>
     </li>
   </ol>
@@ -302,7 +322,7 @@ fstatat：为一个相当于当前打开目录（由 fd 参数指向）的路径
 
 
                 <time class="article-time--reading">
-                    2 minute read
+                    7 minute read
                 </time>
             </div>
         
@@ -355,7 +375,44 @@ fstatat：为一个相当于当前打开目录（由 fd 参数指向）的路径
 <p><code>fstatat</code>：为一个相当于当前打开目录（由 <em>fd</em>
 参数指向）的路径名返回文件统计信息，<em>flag</em> 参数控制着是否跟随者一个符号链接。当
 AT_SYMLINK_NOFOLLOW 标志被设置时，fstatat 不会跟随符号链接。</p>
-<h3 id="二文件类型">二、文件类型</h3>
+<p>stat 大致结构如下所示：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">stat</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">mode_t</span>            <span class="n">st_mode</span><span class="p">;</span>    <span class="cm">/* file type &amp; mode (permissions) */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">ino_t</span>             <span class="n">st_ino</span><span class="p">;</span>     <span class="cm">/* i-node number (serial number) */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">dev_t</span>             <span class="n">st_dev</span><span class="p">;</span>     <span class="cm">/* device number (file system) */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">dev_t</span>             <span class="n">st_rdev</span><span class="p">;</span>    <span class="cm">/* device number for special files */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">nlink_t</span>           <span class="n">st_nlink</span><span class="p">;</span>   <span class="cm">/* number of links */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">uid_t</span>             <span class="n">st_uid</span><span class="p">;</span>     <span class="cm">/* user ID of owner */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">gid_t</span>             <span class="n">st_gid</span><span class="p">;</span>     <span class="cm">/* group ID of owner */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">off_t</span>             <span class="n">st_size</span><span class="p">;</span>    <span class="cm">/* size in bytes, for regular files */</span>
+</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="n">timespec</span>   <span class="n">st_atime</span><span class="p">;</span>   <span class="cm">/* time of last access */</span>
+</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="n">timespec</span>   <span class="n">st_mtime</span><span class="p">;</span>   <span class="cm">/* time of last modificaiton */</span>
+</span></span><span class="line"><span class="cl">    <span class="k">struct</span> <span class="n">timespec</span>   <span class="n">st_ctime</span><span class="p">;</span>   <span class="cm">/* time of last file status change */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">blksize_t</span>         <span class="n">st_blksize</span><span class="p">;</span> <span class="cm">/* best I/O block size */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">blkcnt_t</span>          <span class="n">st_blocks</span><span class="p">;</span>  <span class="cm">/* number of disk blocks allocated */</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="二文件类型">二、文件类型</h3>
 <p>文件类型包含以下几种：</p>
 <ol>
 <li><strong>普通文件（regular file）</strong>。这种文件包含了某种形式的数据，至于这种数据是文本还是二进制数据，对于
@@ -532,6 +589,607 @@ AT_EACCESS，访问检查用的是调用进程的有效用户 ID 和有效组 ID
 </div>
 </div><p>为了改变一个文件的权限位，进程的有效用户 ID 必须等于文件的所有者
 ID，或者该进程必须拥有超级用户权限。</p>
+<p>参数 <em>mode</em> 是下图所示常量的按位或：
+<img src="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-11.png"
+	width="1512"
+	height="1190"
+	srcset="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-11_hu066391eba2ea46cb098cb932ce18c3ec_235263_480x0_resize_box_3.png 480w, /p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-11_hu066391eba2ea46cb098cb932ce18c3ec_235263_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="127"
+		data-flex-basis="304px"
+	
+></p>
+<h3 id="九黏着位-s_isvtx">九、黏着位 S_ISVTX</h3>
+<p>在 UNIX 尚未使用请求分页技术的早期版本中，S_ISVTX 位被称为
+<strong>黏着位</strong>。如果一个可执行程序的这一位被设置了，那么当该程序第一次被执行，在其终止时，程序正文部分的一个副本仍被保存在交换区（程序的正文部分是机器指令）。这使得下次执行该程序时能够较快地将其载入内存。</p>
+<blockquote>
+<p>原因：早期的 UNIX
+文件系统中，文件的各数据块很可能是随机存放的，相比较而言，交换区是被作为一个连续文件来处理的</p>
+</blockquote>
+<p>现今的系统扩展了黏着位的使用范围，某些系统允许针对目录设置黏着位，如果对一个目录设置了黏着位，只有对该目录具有写权限的用户并且满足下列条件之一，才能删除或重命名改目录下的文件：</p>
+<ul>
+<li>拥有此文件。</li>
+<li>拥有此目录。</li>
+<li>是超级用户。</li>
+</ul>
+<h3 id="十函数-chownfchownfchownat-和-lchown">十、函数 chown、fchown、fchownat 和 lchown</h3>
+<p>下面的函数可用于改变文件的用户 ID 和组 ID，如果两个参数 <em>owner</em> 和 <em>group</em>
+中的任意一个是 -1，则对应的 ID 不变。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">chown</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">,</span> <span class="kt">uid_t</span> <span class="n">owner</span><span class="p">,</span> <span class="kt">gid_t</span> <span class="n">group</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fchown</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="kt">uid_t</span> <span class="n">owner</span><span class="p">,</span> <span class="kt">gid_t</span> <span class="n">group</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fchownat</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">,</span> <span class="kt">uid_t</span> <span class="n">owner</span><span class="p">,</span> <span class="kt">gid_t</span> <span class="n">group</span><span class="p">,</span> <span class="kt">int</span> <span class="n">flag</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">lchown</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">,</span> <span class="kt">uid_t</span> <span class="n">owner</span><span class="p">,</span> <span class="kt">gid_t</span> <span class="n">group</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                            <span class="mi">4</span> <span class="err">个函数的返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在符号链接情况下，lchown 和 fchownat（设置了 AT_SYMLINK_NOFOLLOW
+标志）更改符号链接本身的所有者，而不是该符号链接所指向的文件的所有者。除了符号链接外，这
+4 个函数的操作相似。</p>
+<p>不同系统对于修改文件所有者的设定不同，基于 BSD
+的系统一直规定只有超级用户才能更改一个文件的所有者。这样做的原因是防止用户改变其文件的所有者从而摆脱磁盘空间限额对他们的限制。System V 则允许任一用户更改他们所拥有文件的所有者。</p>
+<p>按照 _POSIX_CHOWN_RESTRICTED 的值，如果该值对指定的文件生效，则：</p>
+<ol>
+<li>只有超级用户进程才能更改该文件的用户 ID。</li>
+<li>如果进程拥有此文件（其有效用户 ID 等于该文件的用户 ID），参数 <em>owner</em> 等于 -1
+或文件的所有者 ID，并且参数 <em>group</em> 等于进程的有效组 ID 或进程的附属组 ID
+之一，那么一个非超级用户进程可以修改此文件的组 ID。</li>
+</ol>
+<p>这意味着，当 _POSIX_CHOWN_RESTRICTED 有效时，不能更改其他用户文件的用户
+ID。你可以更改你所拥有文件的组 ID，但只能改到你属于的组。<br>
+如果这些函数非超级用户进程调用，则在成功返回时，该文件的设置用户 ID 位和设置组
+ID 位都被清除。</p>
+<h3 id="十一文件长度">十一、文件长度</h3>
+<p>stat 结构成员 st_size
+表示以字节为单位的文件的长度，此字段只对普通文件、目录文件和符号链接有意义。
+对于普通文件，其文件长度可以为 0，在开始读这种文件时，将得到 EOF
+指示。对于目录，文件长度通常是一个数（如 16
+或 512）的整倍数。对于符号链接，文件长度是在文件名中的实际字节数。</p>
+<blockquote>
+<p>注意：因为符号链接文件长度总是由 st_size 表示，所以它并不包含通常
+C 语言用作名字结尾的 null 字符。</p>
+</blockquote>
+<h4 id="文件空洞">文件空洞</h4>
+<p><strong>文件空洞</strong>
+是由所设置的偏移量超过文件尾端，并写入了某些数据后造成的。文件空洞并不占据磁盘空间。</p>
+<p>如果使用实用程序（如
+cat(1)）复制文件，那么文件空洞将会被填满，其中所有的实际字节数据都被填写为 0。</p>
+<h3 id="十二文件截断">十二、文件截断</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">truncate</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">,</span> <span class="kt">off_t</span> <span class="n">length</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">ftruncate</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="kt">off_t</span> <span class="n">length</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                            <span class="err">两个函数的返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这两个函数将一个现有文件截断为 <em>length</em>。如果该文件长度大于 <em>length</em>，则超过
+<em>length</em> 的部分的数据就不能再访问。如果以前的长度小于
+<em>length</em>，文件长度将在呢个价，在以前的文件尾端和新的文件尾端之间的数据将读作
+0。（也就是可能在文件中创建了一个空洞）。</p>
+<h3 id="十三文件系统">十三、文件系统</h3>
+<p><strong>UFS</strong> 是以 <strong>Berkeley</strong> 快速文件系统为基础的，如图所示：</p>
+<p>一个磁盘可以分为一个或多个分区，每个分区可以包含一个文件系统。i
+节点是固定长度的记录项，它包含有关文件的大部分信息。
+<img src="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-13.png"
+	width="2444"
+	height="1120"
+	srcset="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-13_huba03e62a98ec97173f9f3ce3d063be9e_183991_480x0_resize_box_3.png 480w, /p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-13_huba03e62a98ec97173f9f3ce3d063be9e_183991_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="218"
+		data-flex-basis="523px"
+	
+></p>
+<p>如果更仔细地观察一个柱面组的 i 节点和数据块部分，则可看到下图所示：</p>
+<ul>
+<li>图中有两个目录项指向同一个 i 节点，每个 i 节点中都有一个链接计数，其值是指向该
+i 节点的目录项数。只有当链接计数减少至
+0 时，才可删除该文件（即可以释放该文件所占用的数据块）。这种链接类型被称为硬链接。</li>
+</ul>
+<p><img src="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-14.png"
+	width="2362"
+	height="864"
+	srcset="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-14_hu8b233bb837399ca8903800394e8c0842_346037_480x0_resize_box_3.png 480w, /p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-14_hu8b233bb837399ca8903800394e8c0842_346037_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="273"
+		data-flex-basis="656px"
+	
+></p>
+<ul>
+<li>另外一种链接被称为符号链接（或软链接）。符号链接文件的实际内容包含了该符号链接所指向的文件的名字。</li>
+<li>i 节点包含了文件有关的所有信息：文件类型、文件访问权限位、文件长度和指向文件数据块的指针等。目录项包含了文件名和
+i 节点编号。</li>
+<li>因为目录项的 i 节点编号同一文件系统中的相应
+i 节点，故一个目录项不能指向另一个文件系统给的 i 节点。</li>
+<li>在不更换文件系统的情况下为一个文件重命名时，该文件的实际内容并未移动，只需构造一个指向现有
+i 节点的新目录项，并删除老的目录项。链接计数不会改变。</li>
+</ul>
+<p>任何一个叶目录（不包含其他任何目录的目录）的链接计数总是 2，数值 2 来自于命名该目录的目录项以及在该目录中的 <code>.</code> 项。其他目录的链接计数总是大于或等于 3，相比较于叶目录，至少多了一个<code>..</code>项。
+<img src="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-15.png"
+	width="2330"
+	height="1202"
+	srcset="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-15_hu40a4b48da4386df6cd9003d18b4fed74_412096_480x0_resize_box_3.png 480w, /p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-15_hu40a4b48da4386df6cd9003d18b4fed74_412096_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="193"
+		data-flex-basis="465px"
+	
+></p>
+<h3 id="十四函数-linklinkatunlinkunlinkat-和-remove">十四、函数 link、linkat、unlink、unlinkat 和 remove</h3>
+<p>任何一个文件可以有多个目录项指向其
+i 节点，创建一个指向现有文件的链接的方法是使用 link 函数或 linkat 函数。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">link</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">newpath</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">linkat</span><span class="p">(</span><span class="kt">int</span> <span class="n">efd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">existingpath</span><span class="p">,</span> <span class="kt">int</span> <span class="n">nfd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">newpath</span><span class="p">,</span> <span class="kt">int</span>
+</span></span><span class="line"><span class="cl"><span class="n">flag</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                            <span class="err">两个函数的返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这两个函数创建一个新目录项 <em>newpath</em>，它引用现有文件 <em>existingpath</em>。如果
+<em>newpath</em> 已经存在，则返回出错。只创建 <em>newpath</em>
+中的最后一个分量，路径中的其他部分应当已经存在。</p>
+<p>大多数实现要求现有的和新建的两个路径名在同一文件系统中。如果实现支持创建指向一个目录的硬链接，那么也仅限于超级用户才可以这样做，因为这样做可能在文件系统中形成循环。</p>
+<p>为了删除一个现有的目录项，可以调用 unlink 函数。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">unlink</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">unlinkat</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">,</span> <span class="kt">int</span> <span class="n">flag</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                            <span class="err">两个函数的返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这两个函数将删除目录项，并将由 <em>pathname</em> 所引用的文件链接计数减 1.如果对该文件还有其他链接，仍然可以通过其他链接访问该文件的数据。如果出错，则不对该文件做任何修改。</p>
+<p>只有当链接计数达到
+0 时，该文件的内容才可以被删除。另一个条件也会阻止删除文件的内容&ndash;只要有进程打开了该文件，其内容也不能被删除。关闭一个文件时，内核首先会检查打开该文件的进程数，如果进程数为
+0，再去检查其链接数，如果链接数也是 0，则会删除该文件的内容。</p>
+<p>也可以用 remove 函数解除对一个文件或目录的链接，如果是文件，remove 的功能与
+unlink 相同，如果是目录，remove 的功能与 rmdir 相同。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">remove</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                        <span class="err">返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="十五函数-rename-和-renameat">十五、函数 rename 和 renameat</h3>
+<p>文件或目录可以使用 rename 或 renameat 函数进行重命名。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">rename</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">oldname</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">newname</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">renameat</span><span class="p">(</span><span class="kt">int</span> <span class="n">oldfd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">,</span> <span class="kt">int</span> <span class="n">newfd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">newname</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                            <span class="err">两个函数的返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ol>
+<li>如果 <em>oldname</em> 指向的是一个文件而不是目录，那么为该文件或符号链接重命名。</li>
+<li>如果 <em>oldname</em> 指向的是一个目录，那么为该目录重命名。</li>
+<li>如果 <em>oldname</em> 或 <em>newname</em>
+引用符号链接，则处理的是符号链接本身，而不是它所引用的文件。</li>
+<li>不能对 <code>.</code> 和 <code>..</code> 重命名。</li>
+<li>作为一个特例，如果 <em>oldname</em> 和 <em>newname</em>
+引用同一文件，则函数不做任何更改而成功返回。</li>
+</ol>
+<h3 id="十六符号链接">十六、符号链接</h3>
+<p>符号链接是对一个文件的间接指针，而硬链接直接指向文件的
+i 节点。引入符号链接的原因是为了避开硬链接的一些限制：</p>
+<ul>
+<li>硬链接通常要求链接和文件位于同一文件系统中。</li>
+<li>只有超级用户才能创建指向目录的硬链接。（在底层文件系统支持的情况下，同时为了避免循环）</li>
+</ul>
+<p>对符号链接以及它指向何种对象并无任何的文件系统限制，任何用户都可以创建指向目录的符号链接。符号链接一般用于将一个文件或整个目录结构移到系统中的另一个位置。</p>
+<p>下图展示了部分函数对于符号链接的跟随情况：
+<img src="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-17.png"
+	width="1356"
+	height="1172"
+	srcset="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-17_huf38f11becb96100b207f1fcef5584a97_145342_480x0_resize_box_3.png 480w, /p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-17_huf38f11becb96100b207f1fcef5584a97_145342_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="115"
+		data-flex-basis="277px"
+	
+></p>
+<h3 id="十七创建和读取符号链接">十七、创建和读取符号链接</h3>
+<p>可以用 symlink 或 symlinkat 函数创建一个符号链接。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">symlink</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">actualpath</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">sympath</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">symlinkat</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">actualpath</span><span class="p">,</span> <span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">sympath</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                            <span class="err">两个函数的返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>函数创建了一个指向 <em>actualpath</em> 的新目录项
+<em>sympath</em>。在创建此符号链接时，并不要求 <em>actualpath</em>
+已经存在。并且，<em>actualpath</em> 和 <em>sympath</em> 并不需要位于同一文件系统中。</p>
+<p>因为 open
+函数跟随符号链接，所以需要有一种方法打开该链接本身，并读该链接中的名字。readlink
+和 readlinkat 函数提供了这种功能。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">ssize_t</span> <span class="nf">readlink</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">pathname</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span>
+</span></span><span class="line"><span class="cl"><span class="n">bufsize</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">ssize_t</span> <span class="nf">readlinkat</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">pathname</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">buf</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="kt">size_t</span> <span class="n">bufsize</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                    <span class="err">两个函数的返回值：若成功，返回读取的字节数；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="十八文件的时间">十八、文件的时间</h3>
+<p>每个文件属性所保存的实际精度依赖于文件系统的视线。对于把时间戳记录在秒级的文件系统来说，纳秒这个字段就会被填充为
+0。对于时间戳的记录精度高于秒级的文件系统来说，不足秒的值被转换为纳秒并记录在纳秒这个字段中。<br>
+每个文件维护 3 个时间字段：
+<img src="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-19.png"
+	width="2204"
+	height="440"
+	srcset="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-19_hubdabcb6dd6f4123e551152d973b4f19e_120809_480x0_resize_box_3.png 480w, /p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-19_hubdabcb6dd6f4123e551152d973b4f19e_120809_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="500"
+		data-flex-basis="1202px"
+	
+></p>
+<blockquote>
+<p>注意：修改时间（st_mtime）和状态更改时间（st_ctime）之间的区别。修改时间是文件内容最后一次被修改的时间。状态更改时间是该文件的
+i 节点最后一次被修改的时间。</p>
+</blockquote>
+<blockquote>
+<p>注意：系统并不维护对一个 i 节点的最后一次访问时间。</p>
+</blockquote>
+<h3 id="十九函数-futimensutimensat-和-utimes">十九、函数 futimens、utimensat 和 utimes</h3>
+<p>一个文件的访问和修改时间可以用以下几个函数更改，futimens 和 utimensat
+函数可以指定纳秒级精度的时间戳。用到的数据结构是与 stat 函数族相同的 timespec
+结构。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/stat.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">futimens</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="k">const</span> <span class="k">struct</span> <span class="n">timespec</span> <span class="n">times</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">utimensat</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="k">const</span> <span class="k">struct</span> <span class="n">timespec</span> <span class="n">times</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="kt">int</span> <span class="n">flag</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                            <span class="err">两个函数的返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>times</code> 数组参数：第一个元素包含访问时间，第二个元素包含修改时间。</p>
+<p>时间戳可以按下列 4 种方式之一进行制定。</p>
+<ol>
+<li>如果 <em>times</em> 参数是一个空指针，则访问时间和修改时间两者都设置为当前时间。</li>
+<li>如果 <em>times</em> 参数指向两个 timespec 结构的数组，任一数组元素的 tv_nsec
+字段的值为 UTIME_NOW，相应的时间戳就设置为当前时间，忽略相应的 tv_sec 字段。</li>
+<li>如果 <em>times</em> 参数指向两个 timespec 结构的数组，任一数组元素的 tv_nsec
+字段的值为 UTIME_OMIT，相应的时间戳保持不变，忽略相应的 tv_sec 字段。</li>
+<li>如果 <em>times</em> 参数指向两个 timespec 结构的数组，且 tv_nsec 字段的值既不是
+UTIME_NOW 也不是 UTIME_OMIT，在这种情况下，相应的时间戳设置为相应的 tv_sec
+和 tv_nsec 字段的值。</li>
+</ol>
+<p>执行这些函数所要求的优先权取决于 <em>times</em> 参数的值。</p>
+<ul>
+<li>如果 <em>times</em> 是一个空指针，或者任一 tv_nsec 字段设为
+UTIME_NOW，则进程的有效用户 ID 必须等于该文件的所有者
+ID；进程对该文件必须具有写权限，或者进程是一个超级用户进程。</li>
+<li>如果 <em>times</em> 是一个非空指针，并且任一 tv_nsec 字段的值既不是 UTIME_NOW 也不是
+UTIME_OMIT，则进程的有效用户 ID 必须等于该文件的所有者
+ID，或者进程必须是一个超级用户进程。对文件只具有写权限是不够的。</li>
+<li>如果 <em>times</em> 是非空指针，并且两个 tv_nsec 字段的值都为
+UTIME_OMIT，就不执行任何的权限检查。</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/time.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">utimes</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">,</span> <span class="k">const</span> <span class="k">struct</span> <span class="n">timeval</span> <span class="n">times</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                        <span class="err">返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>注意：我们不能对状态更改时间 st_ctime （i
+节点最近被修改的时间）指定一个只，因为调用 utimes 函数时，该字段会被自动更新。</p>
+</blockquote>
+<h3 id="二十函数-mkdirmkdirat-和-rmdir">二十、函数 mkdir、mkdirat 和 rmdir</h3>
+<p>mkdir 和 mkdirat 可以用来创建目录，rmdir 可以用来删除目录。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/stat.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">mkdir</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">,</span> <span class="kt">mode_t</span> <span class="n">mode</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">mkdirat</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">,</span> <span class="kt">mode_t</span> <span class="n">mode</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                        <span class="err">返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这两个函数创建一个新的空目录。其中 <code>.</code> 和 <code>..</code>
+目录项是自动创建的。所指定的文件访问权限 <em>mode</em> 由进程的文件模式创建屏蔽字修改。<br>
+常见的错误是指定与文件相同的
+<em>mode</em>（只指定读、写权限）。但是，对于目录通常至少要设置一个执行权限位，以允许访问该目录中的文件名。</p>
+<p>用 rmdir 函数可以删除一个空目录。空目录是只包含 <code>.</code> 和 <code>..</code> 这两项的目录。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">rmdir</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                        <span class="err">返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>如果调用此函数使目录的链接计数为
+0，并且没有其他进程打开此目录，则释放由此目录占用的空间。如果在链接计数达到
+0 时，有一个或多个进程打开此目录，则在此目录返回前删除最后一个链接及 <code>.</code> 和 <code>..</code>
+项。另外，在此目录中不能再创建新文件。但是在最后一个进程关闭它之前都不释放此目录。即使其他进程打开此目录，也不能执行其他操作，这样做是因为要保证
+rmdir 成功执行，则必须保证目录是空的。</p>
+<h3 id="二十一读目录">二十一、读目录</h3>
+<p>对某个目录具有访问权限的任一用户都可以读该目录，但是，为了防止文件系统产生混乱，只有内核才能写目录。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;dirent.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="n">DIR</span> <span class="o">*</span><span class="nf">opendir</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">DIR</span> <span class="o">*</span><span class="nf">fdopendir</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                            <span class="err">两个函数返回值：若成功，返回指针；若出错，返回</span> <span class="nb">NULL</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">dirent</span> <span class="o">*</span><span class="nf">readdir</span><span class="p">(</span><span class="n">DIR</span> <span class="o">*</span><span class="n">dp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                          <span class="err">返回值：若成功。返回指针；若在目录尾或出错，返回</span> <span class="nb">NULL</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">rewinddir</span><span class="p">(</span><span class="n">DIR</span> <span class="o">*</span><span class="n">dp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">closedir</span><span class="p">(</span><span class="n">DIR</span> <span class="o">*</span><span class="n">dp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                        <span class="err">返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">long</span> <span class="nf">telldir</span><span class="p">(</span><span class="n">DIR</span> <span class="o">*</span><span class="n">dp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                           <span class="err">返回值：与</span> <span class="n">dp</span> <span class="err">关联的目录中的当前位置</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">seekdir</span><span class="p">(</span><span class="n">DIR</span> <span class="o">*</span><span class="n">dp</span><span class="p">,</span> <span class="kt">long</span> <span class="n">loc</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="二十二函数-chdirfchdir-和-getcwd">二十二、函数 chdir、fchdir 和 getcwd</h3>
+<p>每个进程都有一个当前工作目录，此目录是搜索所有相对路径名的起点。当用户登录到
+UNIX 系统时，其当前工作目录通常是口令文件中该用户登录项的第
+6 个字段&ndash;用户的起始目录。</p>
+<blockquote>
+<p>当前工作目录是进程的一个属性，并不影响其他进程，为了改变 shell
+进程自己的工作目录，shell 应当直接调用 chdir 函数，为此，cd 命令内嵌在 shell
+中。起始目录是登录名的一个属性。</p>
+</blockquote>
+<p>通过 chdir 或 fchdir 函数可以修改当前工作目录。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">chdir</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fchdir</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                            <span class="err">两个函数的返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>通过 getcwd 可以获取当前工作目录的完整路径名。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">char</span> <span class="o">*</span><span class="nf">getcwd</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                    <span class="err">返回值：若成功，返回</span> <span class="n">buf</span><span class="err">；若出错，返回</span> <span class="nb">NULL</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>buf</code>：缓冲区地址，必须有足够的长度以容纳绝对路径名再加上一个终止 null 字节。<br>
+<code>size</code>：缓冲区长度。</p>
+<h3 id="二十三设备特殊文件">二十三、设备特殊文件</h3>
+<p>TODO</p>
+<h3 id="二十四文件权限位小结">二十四、文件权限位小结</h3>
+<p><img src="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-26.png"
+	width="2216"
+	height="1042"
+	srcset="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-26_huf0bb647ec3a724fa9d78e425b699cdf8_452961_480x0_resize_box_3.png 480w, /p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/c4-26_huf0bb647ec3a724fa9d78e425b699cdf8_452961_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="212"
+		data-flex-basis="510px"
+	
+></p>
 
 </section>
 
