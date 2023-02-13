@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='一、流和 FILE 对象 对于标准 I/O 库，它们的操作是围绕着 流 进行的。流是一种抽象的概念，是一种顺序读写数据的模式，它的特点是单向流动，类似于水管。当使用标准 I/O 库打开或创建一个文件，我们就已经使得一个流跟一个文件相关联。
+对于 ASCII 字符集，一个字符用一个字节表示。对于国际字符集，一个字符可以用多个字节表示。标准 I/O 文件流可用于单字节或多字节（“宽”）字符集。而 流的定向 则决定了一个流所读、写的字符是单字节还是多字节的。当一个流最初被创建时，它并没有定向，如果在一个未定向的流上使用一个单字节的 I/O 函数，那么该流的定向就会被设置为 字节定向 的，如果在一个未定向的流上使用一个多字节的 I/O 函数，那么该流的定向就会被设置为 宽定向 的。
+只有两个函数可以改变流的定向，分别是 fwide 和 freopen 函数。fwide 可以设置一个流的定向，而 freopen 会清除一个流的定向。
+1 2 3 4 5 6 7 #include &amp;lt;stdio.h&amp;gt; #include &amp;lt;wchar.h&amp;gt; int fwide(FILE *fp, int mode); 返回值：若流是宽定向的，返回正值；若流是字节定向的，返回负值；若流是未定向的，返回 0 根据 mode 的不同值， fwide 执行不同。
+若 mode 是负值，则 fwide 试图将流设置为字节定向。 若 mode 是正值，则 fwide 试图将流设置为宽定向。 若 mode 为 0，则 fwide 不改变流的定向，但返回标识该流定向的值。 注意：fwide 不改变已定向流的定向，fwide 无出错返回。'>
+<title>标准 I/O 库</title>
+
+<link rel='canonical' href='https://www.imxiejie.me/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/'>
+
+<link rel="stylesheet" href="/scss/style.min.8191399262444ab68b72a18c97392f5349be20a1615d77445be51e974c144cff.css"><meta property='og:title' content='标准 I/O 库'>
+<meta property='og:description' content='一、流和 FILE 对象 对于标准 I/O 库，它们的操作是围绕着 流 进行的。流是一种抽象的概念，是一种顺序读写数据的模式，它的特点是单向流动，类似于水管。当使用标准 I/O 库打开或创建一个文件，我们就已经使得一个流跟一个文件相关联。
+对于 ASCII 字符集，一个字符用一个字节表示。对于国际字符集，一个字符可以用多个字节表示。标准 I/O 文件流可用于单字节或多字节（“宽”）字符集。而 流的定向 则决定了一个流所读、写的字符是单字节还是多字节的。当一个流最初被创建时，它并没有定向，如果在一个未定向的流上使用一个单字节的 I/O 函数，那么该流的定向就会被设置为 字节定向 的，如果在一个未定向的流上使用一个多字节的 I/O 函数，那么该流的定向就会被设置为 宽定向 的。
+只有两个函数可以改变流的定向，分别是 fwide 和 freopen 函数。fwide 可以设置一个流的定向，而 freopen 会清除一个流的定向。
+1 2 3 4 5 6 7 #include &amp;lt;stdio.h&amp;gt; #include &amp;lt;wchar.h&amp;gt; int fwide(FILE *fp, int mode); 返回值：若流是宽定向的，返回正值；若流是字节定向的，返回负值；若流是未定向的，返回 0 根据 mode 的不同值， fwide 执行不同。
+若 mode 是负值，则 fwide 试图将流设置为字节定向。 若 mode 是正值，则 fwide 试图将流设置为宽定向。 若 mode 为 0，则 fwide 不改变流的定向，但返回标识该流定向的值。 注意：fwide 不改变已定向流的定向，fwide 无出错返回。'>
+<meta property='og:url' content='https://www.imxiejie.me/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/'>
+<meta property='og:site_name' content='imxiejie'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2023-02-13T15:29:52&#43;08:00'/><meta property='article:modified_time' content='2023-02-13T15:29:52&#43;08:00'/><meta property='og:image' content='https://www.imxiejie.me/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/unix-book.jpeg' />
+<meta name="twitter:title" content="标准 I/O 库">
+<meta name="twitter:description" content="一、流和 FILE 对象 对于标准 I/O 库，它们的操作是围绕着 流 进行的。流是一种抽象的概念，是一种顺序读写数据的模式，它的特点是单向流动，类似于水管。当使用标准 I/O 库打开或创建一个文件，我们就已经使得一个流跟一个文件相关联。
+对于 ASCII 字符集，一个字符用一个字节表示。对于国际字符集，一个字符可以用多个字节表示。标准 I/O 文件流可用于单字节或多字节（“宽”）字符集。而 流的定向 则决定了一个流所读、写的字符是单字节还是多字节的。当一个流最初被创建时，它并没有定向，如果在一个未定向的流上使用一个单字节的 I/O 函数，那么该流的定向就会被设置为 字节定向 的，如果在一个未定向的流上使用一个多字节的 I/O 函数，那么该流的定向就会被设置为 宽定向 的。
+只有两个函数可以改变流的定向，分别是 fwide 和 freopen 函数。fwide 可以设置一个流的定向，而 freopen 会清除一个流的定向。
+1 2 3 4 5 6 7 #include &amp;lt;stdio.h&amp;gt; #include &amp;lt;wchar.h&amp;gt; int fwide(FILE *fp, int mode); 返回值：若流是宽定向的，返回正值；若流是字节定向的，返回负值；若流是未定向的，返回 0 根据 mode 的不同值， fwide 执行不同。
+若 mode 是负值，则 fwide 试图将流设置为字节定向。 若 mode 是正值，则 fwide 试图将流设置为宽定向。 若 mode 为 0，则 fwide 不改变流的定向，但返回标识该流定向的值。 注意：fwide 不改变已定向流的定向，fwide 无出错返回。"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://www.imxiejie.me/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/unix-book.jpeg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu87865fc6accf0c3d769e896d75694e81_162656_300x0_resize_q75_box.jpeg" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">imxiejie</a></h1>
+            <h2 class="site-description">Somebody has to win, so why not be me?</h2>
+        </div>
+    </header><ol class="social-menu">
+            
+                <li>
+                    <a 
+                        href='https://github.com/jiennyx'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>Dark Mode</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li>
+      <ol>
+        <li><a href="#一流和-file-对象">一、流和 FILE 对象</a></li>
+        <li><a href="#二标准输入标准输出和标准错误">二、标准输入、标准输出和标准错误</a></li>
+        <li><a href="#三缓冲">三、缓冲</a></li>
+        <li><a href="#四打开流">四、打开流</a></li>
+        <li><a href="#五读和写流">五、读和写流</a>
+          <ol>
+            <li><a href="#1输入函数">1.输入函数</a></li>
+            <li><a href="#2输出函数">2.输出函数</a></li>
+          </ol>
+        </li>
+        <li><a href="#六每次一行-io">六、每次一行 I/O</a></li>
+        <li><a href="#七标准-io-的效率">七、标准 I/O 的效率</a></li>
+        <li><a href="#八二进制-io">八、二进制 I/O</a></li>
+        <li><a href="#九定位流">九、定位流</a>
+          <ol>
+            <li><a href="#1-ftell-和-fseek-函数">1. ftell 和 fseek 函数</a></li>
+            <li><a href="#2-ftello-和-fseeko-函数">2. ftello 和 fseeko 函数</a></li>
+            <li><a href="#3-fgetpos-和-fsetpos-函数">3. fgetpos 和 fsetpos 函数</a></li>
+          </ol>
+        </li>
+        <li><a href="#十格式化-io">十、格式化 I/O</a>
+          <ol>
+            <li><a href="#1-格式化输出">1. 格式化输出</a></li>
+            <li><a href="#2-格式化输入">2. 格式化输入</a></li>
+          </ol>
+        </li>
+        <li><a href="#十一实现细节">十一、实现细节</a></li>
+        <li><a href="#十二临时文件">十二、临时文件</a></li>
+        <li><a href="#十三内存流">十三、内存流</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/">
+                <img src="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_800x0_resize_q75_box.jpeg"
+                        srcset="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_800x0_resize_q75_box.jpeg 800w, /p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_1600x0_resize_q75_box.jpeg 1600w"
+                        width="800" 
+                        height="298" 
+                        loading="lazy"
+                        alt="Featured image of post 标准 I/O 库" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/unix-%E7%8E%AF%E5%A2%83%E9%AB%98%E7%BA%A7%E7%BC%96%E7%A8%8B/" >
+                UNIX 环境高级编程
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/">标准 I/O 库</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Feb 13, 2023</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    5 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h3 id="一流和-file-对象">一、流和 FILE 对象</h3>
+<p>对于标准 I/O 库，它们的操作是围绕着 <strong>流</strong>
+进行的。流是一种抽象的概念，是一种顺序读写数据的模式，它的特点是单向流动，类似于水管。当使用标准 I/O 库打开或创建一个文件，我们就已经使得一个流跟一个文件相关联。</p>
+<p>对于 ASCII
+字符集，一个字符用一个字节表示。对于国际字符集，一个字符可以用多个字节表示。标准
+I/O 文件流可用于单字节或多字节（“宽”）字符集。而 <strong>流的定向</strong>
+则决定了一个流所读、写的字符是单字节还是多字节的。当一个流最初被创建时，它并没有定向，如果在一个未定向的流上使用一个单字节的
+I/O
+函数，那么该流的定向就会被设置为 <strong>字节定向</strong> 的，如果在一个未定向的流上使用一个多字节的
+I/O 函数，那么该流的定向就会被设置为 <strong>宽定向</strong> 的。</p>
+<p>只有两个函数可以改变流的定向，分别是 fwide 和 freopen 函数。fwide
+可以设置一个流的定向，而 freopen 会清除一个流的定向。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;wchar.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fwide</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="n">fp</span><span class="p">,</span> <span class="kt">int</span> <span class="n">mode</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="err">返回值：若流是宽定向的，返回正值；若流是字节定向的，返回负值；若流是未定向的，返回</span>
+</span></span><span class="line"><span class="cl"><span class="mi">0</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>根据 <em>mode</em> 的不同值， fwide 执行不同。</p>
+<ul>
+<li>若 <em>mode</em> 是负值，则 fwide 试图将流设置为字节定向。</li>
+<li>若 <em>mode</em> 是正值，则 fwide 试图将流设置为宽定向。</li>
+<li>若 <em>mode</em> 为 0，则 fwide 不改变流的定向，但返回标识该流定向的值。</li>
+</ul>
+<blockquote>
+<p>注意：fwide <strong>不改变已定向流的定向</strong>，fwide 无出错返回。</p>
+</blockquote>
+<p>当打开一个流时，标准 I/O 函数 fopen 返回一个指向 FILE
+对象的指针，该对象通常是一个结构，包含了标准 I/O
+库为管理该流所需要的所有信息，包括用于实际 I/O
+的文件描述符、指向用户该流缓冲区的指针、缓冲区的长度、当前在缓冲区中的字符数以及出错标志等。</p>
+<h3 id="二标准输入标准输出和标准错误">二、标准输入、标准输出和标准错误</h3>
+<p>对一个进程预定义了 3 个流，并且这
+3 个流可以自动被进程使用，它们分别是：标准输入、标准输出和标准错误。这些流引用的文件同文件描述符所引用的相同。</p>
+<h3 id="三缓冲">三、缓冲</h3>
+<p><strong>标准 I/O 提供缓冲的目的是为了尽可能的减少 read 和 write 的调用次数。</strong></p>
+<p>标准 I/O 提供以下 3 种类型的缓冲：</p>
+<ol>
+<li><strong>全缓冲</strong>。在这种情况下，填满标准 I/O 缓冲区才进行实际的 I/O
+操作。缓冲区可由标准 I/O 例程自动地 <strong>冲洗</strong>，或者可以调用函数 fflush
+冲洗一个流。
+<blockquote>
+<p>冲洗：在 UNIX 环境中，冲洗有两种意思，在标准 I/O 库方面，flush
+意味着将缓冲区的内容写到磁盘上。在终端驱动程序方面，flush
+表示丢弃已经存储在缓冲区的数据。</p>
+</blockquote>
+</li>
+<li><strong>行缓冲</strong>。在这种情况下，当在输入和输出中遇到换行符时，标准 I/O 库执行 I/O
+操作。当流涉及一个终端时（比如标准输入和标准输出），通常使用行缓冲。
+<blockquote>
+<p>对于行缓冲有两个限制：<br>
+第一，因为标准 I/O
+库用来收集每一行的缓冲区的长度都是固定的，所以只要填满了缓冲区，即使没有写一个换行符，也会进行
+I/O 操作。<br>
+第二（不理解），任何时候只要通过标准 I/O
+库要求从一个不带缓冲的流或者从一个行缓冲的流（它从内核请求需要数据）得到输入数据，那么就会冲洗所有行缓冲输出流。</p>
+</blockquote>
+</li>
+<li><strong>无缓冲</strong>。在这种情况下，标准 I/O 库不对字符进行缓冲存储。标准错误流 stderr
+通常是不带缓冲的。</li>
+</ol>
+<p>ISO C 要求下列缓冲特征：</p>
+<ul>
+<li>当且仅当标准输入和标准输出并不指向交互式设备时，它们才是全缓冲的。</li>
+<li>标准错误绝不会是全缓冲的。</li>
+</ul>
+<p>很多系统默认使用下列缓冲类型：</p>
+<ul>
+<li>标准错误是无缓冲的。</li>
+<li>若是指向终端设备的流，则是行缓冲的；否则是全缓冲的。</li>
+</ul>
+<p>可以使用下列函数更改缓冲类型：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">setbuf</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">fp</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">buf</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">setvbuf</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">fp</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">buf</span><span class="p">,</span> <span class="kt">int</span> <span class="n">mode</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                    <span class="err">返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回非</span> <span class="mi">0</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>可以使用 setbuf 打开或关闭缓冲机制，为了带缓冲进行 I/O，参数 buf
+必须指向一个缓冲区。通常在此之后该流就是全缓冲的，但是如果该流与一个终端设备相关，那么某些系统也可将其设置为行缓冲。为了关闭缓冲，将
+<em>buf</em> 设置为 NULL。<br>
+而使用 setvbuf，可以指定所需的缓冲类型，这是由 <em>mode</em> 参数实现的：</p>
+<ul>
+<li>_IOFBF 全缓冲</li>
+<li>_IOLBF 行缓冲</li>
+<li>_IONBF 不带缓冲</li>
+</ul>
+<blockquote>
+<p>注意：如果在一个函数内分配一个自动变量类的标准 I/O
+缓冲区，则从该函数返回之前，必须关闭该流。另外，因为某些实现将缓冲区的一部分用于存放它自己的管理操作信息，所以可以存放在缓冲区中的实际数据字节数少于
+<em>size</em>。一般而言，应该由系统选择缓冲区长度（<em>size</em> 为 NULL），并自动分配缓冲区。在这种情况下关闭此流时，标准
+I/O 库将自动释放缓冲区。</p>
+</blockquote>
+<p>下面的函数可用于在任何时候强制冲洗一个缓冲区：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fflush</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="n">fp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                    <span class="err">返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="n">EOF</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>该函数会将所有未写的数据都传送至内核。如果 <em>fp</em>
+为 NULL，那么该函数会导致所有输出流被冲洗。</p>
+<h3 id="四打开流">四、打开流</h3>
+<p>下面 3 个函数可用于打开一个标准 I/O 流：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="n">FILE</span> <span class="o">*</span><span class="nf">fopen</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">pathname</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">type</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">FILE</span> <span class="o">*</span><span class="nf">freopen</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">pathname</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">type</span><span class="p">,</span> <span class="n">FILE</span>
+</span></span><span class="line"><span class="cl"><span class="o">*</span><span class="kr">restrict</span> <span class="n">fp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">FILE</span> <span class="o">*</span><span class="nf">fdopen</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">type</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                    <span class="mi">3</span> <span class="err">个函数的返回值：若成功，返回文件指针；若出错，返回</span> <span class="nb">NULL</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>freopen
+函数在一个指定的流上打开一个指定的文件，如果该流已经被打开，则先关闭流。如果该流已经定向，则会清除定向。</p>
+<p><em>type</em> 参数指定对该 I/O 流的读、写方式：
+<img src="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/c5-2.png"
+	width="2128"
+	height="576"
+	srcset="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/c5-2_hu1c3ec67a28a6925cd9ff0891e6709442_214574_480x0_resize_box_3.png 480w, /p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/c5-2_hu1c3ec67a28a6925cd9ff0891e6709442_214574_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="369"
+		data-flex-basis="886px"
+	
+></p>
+<p>可以调用 fclose 关闭一个打开的流：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fclose</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="n">fp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                    <span class="err">返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="n">EOF</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在文件被关闭之前，冲洗缓冲区中的输出数据，而缓冲区中的任何输入数据将被丢弃。如果标准
+I/O 库已经为该流自动分配了一个缓冲区，则释放此缓冲区。<br>
+当一个进程正常终止时，则所有带未写缓冲数据的标准 I/O
+流都会被冲洗，所有打开的标准 I/O 流都被关闭。</p>
+<h3 id="五读和写流">五、读和写流</h3>
+<p>一旦打开了流，则可以在 3 种不同类型的非格式化 I/O
+种进行选择，对其进行读、写操作。</p>
+<ol>
+<li>每次一个字符的 I/O。一次读或写一个字符，如果流是带缓冲的，则标准 I/O
+函数处理所有缓冲。</li>
+<li>每次一行的 I/O。</li>
+<li>直接 I/O。</li>
+</ol>
+<h4 id="1输入函数">1.输入函数</h4>
+<p>以下 3 个函数可用于一次读一个字符：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">getc</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="n">fp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fgetc</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="n">fp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">getchar</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="err">返回值：若成功，返回下一个字符；若已经到达文件尾端或出错，返回</span> <span class="n">EOF</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>因为不管到达文件尾端还是出错，3
+个函数都返回一样的值，为了区分这两种情况，必须使用下列函数：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">ferror</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="n">fp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">feof</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="n">fp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="err">两个函数的返回值：若条件为真，返回非</span> <span class="mi">0</span><span class="err">（真）；否则，返回</span> <span class="mi">0</span><span class="err">（假）</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">clearerr</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="n">fp</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在大多数实现中，为每个流在 FILE 对象中维护了两个标志：</p>
+<ul>
+<li>出错标志</li>
+<li>文件结束标志</li>
+</ul>
+<p>调用 clearerr 函数可以清除这两个标志。</p>
+<p>从流中读取数据以后，可以调用 ungetc 将字符再压送回流中：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">ungetc</span><span class="p">(</span><span class="kt">int</span> <span class="n">c</span><span class="p">,</span> <span class="n">FILE</span> <span class="o">*</span><span class="n">fp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                    <span class="err">返回值：若成功，返回</span> <span class="n">c</span><span class="err">；若出错，返回</span> <span class="n">EOF</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>压送回到流中的字符以后又可以从流中读出，但读出的顺序和压送回的顺序相反。<br>
+回送的字符，不一定必须是上一次读到的字符。不能回送
+EOF。但是当已经到达文件尾端时，仍然可以回送一个字符，下次读将返回该字符，再次读将返回
+EOF。之所以可以这样做，是因为 ungetc 成功调用后会清除流的文件结束标志。</p>
+<blockquote>
+<p>用 ungetc 压送回字符时，并没有将它们写到底层文件或设备中，只是将它们写回标准
+I/O 库的流缓冲区中。</p>
+</blockquote>
+<h4 id="2输出函数">2.输出函数</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">putc</span><span class="p">(</span><span class="kt">int</span> <span class="n">c</span><span class="p">,</span> <span class="n">FILE</span> <span class="o">*</span><span class="n">fp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fputc</span><span class="p">(</span><span class="kt">int</span> <span class="n">c</span><span class="p">,</span> <span class="n">FILE</span> <span class="o">*</span><span class="n">fp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">putchar</span><span class="p">(</span><span class="kt">int</span> <span class="n">c</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                            <span class="mi">3</span> <span class="err">个函数的返回值：若成功，返回</span> <span class="n">c</span><span class="err">；若出错，返回</span> <span class="n">EOF</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="六每次一行-io">六、每次一行 I/O</h3>
+<p>下面两个函数提供每次输入一行的功能：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">char</span> <span class="o">*</span><span class="nf">gets</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">buf</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">char</span> <span class="o">*</span><span class="nf">fgets</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">buf</span><span class="p">,</span> <span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="n">FILE</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">fp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="err">两个函数返回值：若成功，返回</span> <span class="n">buf</span><span class="err">；若已经到达文件尾端或出错，返回</span> <span class="nb">NULL</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这两个函数都制定了缓冲区的地址，读入的行将送入其中。gets 从标准输入读，而 fgets
+从指定的流读。</p>
+<blockquote>
+<p>注意：gets 不推荐使用，调用者在使用 gets
+时无法指定缓冲区长度，可能造成缓冲区溢出。</p>
+</blockquote>
+<p>puts 和 fputs 提供每次输出一行的功能：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">puts</span><span class="p">(</span><span class="n">cnst</span> <span class="kt">char</span> <span class="o">*</span><span class="n">str</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fputs</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">str</span><span class="p">,</span> <span class="n">FILE</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">fp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                        <span class="err">两个函数返回值：若成功，返回非负值；若出错，返回</span> <span class="n">EOF</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="七标准-io-的效率">七、标准 I/O 的效率</h3>
+<p>TODO</p>
+<h3 id="八二进制-io">八、二进制 I/O</h3>
+<p>进行二进制 I/O 时，更愿意一次读或写一个完整的结构，以下两个函数可以提供二进制
+I/O 操作：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">size_t</span> <span class="nf">fread</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">ptr</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">size</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">nobj</span><span class="p">,</span> <span class="n">FILE</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">fp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">size_t</span> <span class="nf">fwrite</span><span class="p">(</span><span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">ptr</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">size</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">nobj</span><span class="p">,</span> <span class="n">FILE</span> <span class="o">*</span><span class="kr">restrict</span>
+</span></span><span class="line"><span class="cl"><span class="n">fp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                            <span class="err">两个函数的返回值：读或写的对象数</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>fread 和 fwrite
+返回读或写的对象数。对于读，如果出错或到达文件尾端，则此数字可以少于
+<em>nobj</em>。在这种情况下，应调用 ferror 或 feof
+以判断是哪一种情况。对于写，如果返回值少于所要求的 <em>nobj</em>，则出错。</p>
+<p><strong>二进制 I/O 只能用于读在同一系统上已写的数据</strong>，原因是：</p>
+<ol>
+<li>在一个结构中，同一成员的偏移量可能随编译程序和系统的不同而不同（由于不同的对齐要求）。</li>
+<li>用来存储多字节整数和浮点值的二进制格式在不同的系统结构间也可能不同。</li>
+</ol>
+<blockquote>
+<p>在不同系统之间交换二进制数据的实际解决办法是使用互认的规范格式。</p>
+</blockquote>
+<h3 id="九定位流">九、定位流</h3>
+<p>有 3 种方法可以定位流。</p>
+<h4 id="1-ftell-和-fseek-函数">1. ftell 和 fseek 函数</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">long</span> <span class="nf">ftell</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="n">fp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                        <span class="err">返回值：若成功，返回当前文件位置指示；若出错，返回</span> <span class="o">-</span><span class="mi">1L</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fseek</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="n">fp</span><span class="p">,</span> <span class="kt">long</span> <span class="n">offset</span><span class="p">,</span> <span class="kt">int</span> <span class="n">whence</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                        <span class="err">返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">rewind</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="n">fp</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>对于一个二进制文件，其文件位置指示器是从文件起始位置开始度量，并以字节为度量单位。
+对于文本文件，它们的文件当前位置可能不以简单的字节偏移量来度量，因为在非 UNIX
+系统中，它们可能以不同的格式存放文本文件。</p>
+<h4 id="2-ftello-和-fseeko-函数">2. ftello 和 fseeko 函数</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">off_t</span> <span class="nf">ftello</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="n">fp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                    <span class="err">返回值：若成功，返回当前文件位置；若出错，返回</span> <span class="p">(</span><span class="kt">off_t</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fseeko</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="n">fp</span><span class="p">,</span> <span class="kt">off_t</span> <span class="n">offset</span><span class="p">,</span> <span class="kt">int</span> <span class="n">whence</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                        <span class="err">返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="3-fgetpos-和-fsetpos-函数">3. fgetpos 和 fsetpos 函数</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fgetpos</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">fp</span><span class="p">,</span> <span class="kt">fpos_t</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">pos</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fsetpos</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="n">fp</span><span class="p">,</span> <span class="k">const</span> <span class="kt">fpos_t</span> <span class="o">*</span><span class="n">pos</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                    <span class="err">返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回非</span> <span class="mi">0</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="十格式化-io">十、格式化 I/O</h3>
+<h4 id="1-格式化输出">1. 格式化输出</h4>
+<p>格式化输出由下列 5 个函数处理：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">printf</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">format</span><span class="p">,</span> <span class="p">...);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fprintf</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">fp</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">format</span><span class="p">,</span> <span class="p">...);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">dprintf</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">format</span><span class="p">,</span> <span class="p">...);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="mi">3</span> <span class="err">个函数的返回值：若成功，返回输出字节数；若输出出错，返回负值</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">sprintf</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">buf</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">format</span><span class="p">,</span> <span class="p">...);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                    <span class="err">返回值：若成功，返回存入数组的字符数；若编码出错，返回负值</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">snprintf</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">n</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">format</span><span class="p">,</span> <span class="p">...);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="err">返回值：若缓冲区足够大，返回将要存入数组的字符数；若编码出错，返回负值</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>sprintf 可能会造成由 <em>buf</em> 指向的缓冲区的溢出。</p>
+</blockquote>
+<p><strong>格式说明</strong><br>
+<code>%[flags][fldwidth][precision][lenmodifier]convtype</code></p>
+<ul>
+<li>flags
+<img src="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/c5-7.png"
+	width="1898"
+	height="588"
+	srcset="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/c5-7_hu1476aadb10c0ae356424e70fe380b181_161728_480x0_resize_box_3.png 480w, /p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/c5-7_hu1476aadb10c0ae356424e70fe380b181_161728_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="322"
+		data-flex-basis="774px"
+	
+></li>
+<li>fldwidth 说明最小字段宽度。</li>
+<li>precision
+说明整形转换后最少输出数字位数、浮点数转换后小数点后的最小位数、字符串转换后最大字节数。精度是一个点（<code>.</code>），其后跟随一个可选的非负十进制数或一个星号（<code>*</code>）。</li>
+<li>lenmodifier 说明参数长度。
+<img src="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/c5-8.png"
+	width="1970"
+	height="688"
+	srcset="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/c5-8_hue9190f452b1d3cf1470bc6fcc3ca558d_190758_480x0_resize_box_3.png 480w, /p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/c5-8_hue9190f452b1d3cf1470bc6fcc3ca558d_190758_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="286"
+		data-flex-basis="687px"
+	
+></li>
+<li>convtype 不是可选的，它控制如何解释参数。
+<img src="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/c5-9.png"
+	width="2162"
+	height="1168"
+	srcset="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/c5-9_huf0e0d2c80f238bf8852db1e29ba672eb_316936_480x0_resize_box_3.png 480w, /p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/c5-9_huf0e0d2c80f238bf8852db1e29ba672eb_316936_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="185"
+		data-flex-basis="444px"
+	
+></li>
+</ul>
+<p>下面 5 个 printf 函数类似于上面 5 种，但是可变参数（<code>...</code>）替换成了 <em>arg</em>。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdarg.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">vprintf</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">format</span><span class="p">,</span> <span class="n">va_list</span> <span class="n">arg</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">vfprintf</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">fp</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">format</span><span class="p">,</span> <span class="n">va_list</span> <span class="n">arg</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">vdprintf</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">format</span><span class="p">,</span> <span class="n">va_list</span> <span class="n">arg</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                    <span class="mi">3</span> <span class="err">个函数返回值：若成功，返回输出字符数；若出错，返回负值</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">vsprintf</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">buf</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">format</span><span class="p">,</span> <span class="n">va_list</span> <span class="n">arg</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="err">函数返回值：若成功，返回存入数组的字符数；若编码出错，返回负值</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">vsnprintf</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">n</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">format</span><span class="p">,</span> <span class="n">va_list</span>
+</span></span><span class="line"><span class="cl"><span class="n">arg</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="err">返回值：若缓冲区足够大，返回存入数组的字符数；若编码出错，返回负值</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="2-格式化输入">2. 格式化输入</h4>
+<p>下列 3 个函数可以处理格式化输入：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">scanf</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">format</span><span class="p">,</span> <span class="p">...);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fscanf</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">fp</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">format</span><span class="p">,</span> <span class="p">...);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">sscanf</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">buf</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">format</span><span class="p">,</span> <span class="p">...);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="err">返回值：赋值的输入项数；若输入出错或在任一转换前已到达文件尾端，返回</span> <span class="n">EOF</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>格式说明</strong><br>
+<code>%[*][fldwidth][m][lenmodifier]convtype</code></p>
+<ul>
+<li><code>*</code> 号用于抑制转换。</li>
+<li>fldwidth 说明最大宽度，即最大字符数。</li>
+<li>lenmodifier 说明要用转换结果赋值的参数大小。</li>
+<li>convtype
+<img src="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/c5-10.png"
+	width="2208"
+	height="1094"
+	srcset="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/c5-10_hua2874cb11160d644c0c0e228c343188c_336723_480x0_resize_box_3.png 480w, /p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/c5-10_hua2874cb11160d644c0c0e228c343188c_336723_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="201"
+		data-flex-basis="484px"
+	
+></li>
+</ul>
+<p>下面函数同样使用 arg 替换 <code>...</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdarg.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">vscanf</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">format</span><span class="p">,</span> <span class="n">va_list</span> <span class="n">arg</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">vfscanf</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">fp</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">format</span><span class="p">,</span> <span class="n">va_list</span> <span class="n">arg</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">vsscanf</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">buf</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="kr">restrict</span> <span class="n">format</span><span class="p">,</span> <span class="n">va_list</span> <span class="n">arg</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="mi">3</span> <span class="err">个返回值：指定的输入项目数；若输入出错或在任一转换前文件结束，返回</span> <span class="n">EOF</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="十一实现细节">十一、实现细节</h3>
+<p>每个标准 I/O 流都有一个与其相关联的文件描述符，可以用 fileno
+获取一个流的文件描述符。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fileno</span><span class="p">(</span><span class="n">FILE</span> <span class="o">*</span><span class="n">fp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                            <span class="err">返回值：与该流相关联的文件描述符</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>// TODO</p>
+<h3 id="十二临时文件">十二、临时文件</h3>
+<p>下面两个函数可用于创建临时文件：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">char</span> <span class="o">*</span><span class="nf">tmpnam</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">ptr</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                                <span class="err">返回值：指向唯一路径名的指针</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">FILE</span> <span class="o">*</span><span class="nf">tmpfile</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                <span class="err">返回值：若成功，返回文件指针；若出错，返回</span> <span class="nb">NULL</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>注意：UNIX 对二进制文件不进行特殊区分。</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">char</span> <span class="o">*</span><span class="nf">mkdtemp</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">template</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                        <span class="err">返回值：若成功，返回指向目录名的指针；若出错，返回</span> <span class="nb">NULL</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">mkstemp</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">template</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                <span class="err">返回值：若成功，返回文件描述符；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="十三内存流">十三、内存流</h3>
+<p>TODO</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">Related content</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 文件和目录"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">文件和目录</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/%E6%96%87%E4%BB%B6-i/o/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E6%96%87%E4%BB%B6-i/o/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 文件 I/O"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">文件 I/O</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">
+        
+        
+            <div class="article-image">
+                <img src="/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post UNIX 基础知识"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">UNIX 基础知识</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="jiennyx/jiennyx.github.io"
+        issue-term="pathname"
+        
+        label="Comment"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+        2023 imxiejie
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.16.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
