@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='一、口令文件 UNIX 系统口令文件包含了下图所示的各个字段： 口令文件通常是 /etc/passwd，是一个 ASCII 文件，每一行都包含上图中的字段，字段之间用 : 分隔。
+例如：
+1 2 3 4 root:x:0:0:root:/root:/bin/bash squid:x:23:23::/var/spool/squid:/dev/null nobody:x:65534:65534:Nobody:/home:/bin/sh sar:x:205:105:Stephen Rago:/home/sar:/bin/bash 上述大致格式为 用户名:加密口令:用户 ID:组 ID:注释:起始目录:登录 shell 通常有一个用户名为 root 的登录项，其用户 ID 是 0（超级用户）。 加密口令字段包含了一个占位符。 口令文件项中的某些字段可能为空。 shell 字段包含了一个可执行文件名，被用作该用户的登录 shell。而如 /dev/null 不是一个可执行文件，这是一个设备，目的是为了防止以用户 squid 的名义登录系统。 为了阻止一个特定用户登录系统，除了使用 /dev/null 外，可以有多种方式： /bin/false 以不成功（非 0）状态终止。 /bin/true 以成功（0）状态终止。 nologin 打印可定制的出错信息，然后以非 0 状态终止。 使用 nobody 用户名的一个目的是，使任何人都可以登录系统，但其用户 ID 和 组 ID 不提供任何特权。 提供 finger 命令的某些系统支持注释字段中的附加信息。 下列是两个获取口令文件项的函数：
+1 2 3 4 5 6 7 #include &amp;lt;pwd.'>
+<title>系统数据文件和信息</title>
+
+<link rel='canonical' href='https://www.imxiejie.me/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/'>
+
+<link rel="stylesheet" href="/scss/style.min.8191399262444ab68b72a18c97392f5349be20a1615d77445be51e974c144cff.css"><meta property='og:title' content='系统数据文件和信息'>
+<meta property='og:description' content='一、口令文件 UNIX 系统口令文件包含了下图所示的各个字段： 口令文件通常是 /etc/passwd，是一个 ASCII 文件，每一行都包含上图中的字段，字段之间用 : 分隔。
+例如：
+1 2 3 4 root:x:0:0:root:/root:/bin/bash squid:x:23:23::/var/spool/squid:/dev/null nobody:x:65534:65534:Nobody:/home:/bin/sh sar:x:205:105:Stephen Rago:/home/sar:/bin/bash 上述大致格式为 用户名:加密口令:用户 ID:组 ID:注释:起始目录:登录 shell 通常有一个用户名为 root 的登录项，其用户 ID 是 0（超级用户）。 加密口令字段包含了一个占位符。 口令文件项中的某些字段可能为空。 shell 字段包含了一个可执行文件名，被用作该用户的登录 shell。而如 /dev/null 不是一个可执行文件，这是一个设备，目的是为了防止以用户 squid 的名义登录系统。 为了阻止一个特定用户登录系统，除了使用 /dev/null 外，可以有多种方式： /bin/false 以不成功（非 0）状态终止。 /bin/true 以成功（0）状态终止。 nologin 打印可定制的出错信息，然后以非 0 状态终止。 使用 nobody 用户名的一个目的是，使任何人都可以登录系统，但其用户 ID 和 组 ID 不提供任何特权。 提供 finger 命令的某些系统支持注释字段中的附加信息。 下列是两个获取口令文件项的函数：
+1 2 3 4 5 6 7 #include &amp;lt;pwd.'>
+<meta property='og:url' content='https://www.imxiejie.me/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/'>
+<meta property='og:site_name' content='imxiejie'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2023-02-14T11:23:45&#43;08:00'/><meta property='article:modified_time' content='2023-02-14T11:23:45&#43;08:00'/><meta property='og:image' content='https://www.imxiejie.me/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/unix-book.jpeg' />
+<meta name="twitter:title" content="系统数据文件和信息">
+<meta name="twitter:description" content="一、口令文件 UNIX 系统口令文件包含了下图所示的各个字段： 口令文件通常是 /etc/passwd，是一个 ASCII 文件，每一行都包含上图中的字段，字段之间用 : 分隔。
+例如：
+1 2 3 4 root:x:0:0:root:/root:/bin/bash squid:x:23:23::/var/spool/squid:/dev/null nobody:x:65534:65534:Nobody:/home:/bin/sh sar:x:205:105:Stephen Rago:/home/sar:/bin/bash 上述大致格式为 用户名:加密口令:用户 ID:组 ID:注释:起始目录:登录 shell 通常有一个用户名为 root 的登录项，其用户 ID 是 0（超级用户）。 加密口令字段包含了一个占位符。 口令文件项中的某些字段可能为空。 shell 字段包含了一个可执行文件名，被用作该用户的登录 shell。而如 /dev/null 不是一个可执行文件，这是一个设备，目的是为了防止以用户 squid 的名义登录系统。 为了阻止一个特定用户登录系统，除了使用 /dev/null 外，可以有多种方式： /bin/false 以不成功（非 0）状态终止。 /bin/true 以成功（0）状态终止。 nologin 打印可定制的出错信息，然后以非 0 状态终止。 使用 nobody 用户名的一个目的是，使任何人都可以登录系统，但其用户 ID 和 组 ID 不提供任何特权。 提供 finger 命令的某些系统支持注释字段中的附加信息。 下列是两个获取口令文件项的函数：
+1 2 3 4 5 6 7 #include &amp;lt;pwd."><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://www.imxiejie.me/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/unix-book.jpeg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu87865fc6accf0c3d769e896d75694e81_162656_300x0_resize_q75_box.jpeg" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">imxiejie</a></h1>
+            <h2 class="site-description">Somebody has to win, so why not be me?</h2>
+        </div>
+    </header><ol class="social-menu">
+            
+                <li>
+                    <a 
+                        href='https://github.com/jiennyx'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>Dark Mode</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li>
+      <ol>
+        <li><a href="#一口令文件">一、口令文件</a></li>
+        <li><a href="#二阴影口令">二、阴影口令</a></li>
+        <li><a href="#三组文件">三、组文件</a></li>
+        <li><a href="#四附属组-id">四、附属组 ID</a></li>
+        <li><a href="#五其他数据文件">五、其他数据文件</a></li>
+        <li><a href="#六登录账户记录">六、登录账户记录</a></li>
+        <li><a href="#七系统标识">七、系统标识</a></li>
+        <li><a href="#八时间和日期例程">八、时间和日期例程</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/">
+                <img src="/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_800x0_resize_q75_box.jpeg"
+                        srcset="/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_800x0_resize_q75_box.jpeg 800w, /p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_1600x0_resize_q75_box.jpeg 1600w"
+                        width="800" 
+                        height="298" 
+                        loading="lazy"
+                        alt="Featured image of post 系统数据文件和信息" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/unix-%E7%8E%AF%E5%A2%83%E9%AB%98%E7%BA%A7%E7%BC%96%E7%A8%8B/" >
+                UNIX 环境高级编程
+            </a>
+        
+            <a href="/categories/todo/" >
+                TODO
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/">系统数据文件和信息</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Feb 14, 2023</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    2 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h3 id="一口令文件">一、口令文件</h3>
+<p>UNIX 系统口令文件包含了下图所示的各个字段：
+<img src="/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/c6-1.png"
+	width="2152"
+	height="1034"
+	srcset="/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/c6-1_hue225b6fbeac565e46febaf8fd4d3bbd5_298053_480x0_resize_box_3.png 480w, /p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/c6-1_hue225b6fbeac565e46febaf8fd4d3bbd5_298053_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="208"
+		data-flex-basis="499px"
+	
+></p>
+<p>口令文件通常是 <code>/etc/passwd</code>，是一个 ASCII
+文件，每一行都包含上图中的字段，字段之间用 <code>:</code> 分隔。<br>
+例如：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">root:x:0:0:root:/root:/bin/bash
+</span></span><span class="line"><span class="cl">squid:x:23:23::/var/spool/squid:/dev/null
+</span></span><span class="line"><span class="cl">nobody:x:65534:65534:Nobody:/home:/bin/sh
+</span></span><span class="line"><span class="cl">sar:x:205:105:Stephen Rago:/home/sar:/bin/bash
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>上述大致格式为 <code>用户名:加密口令:用户 ID:组 ID:注释:起始目录:登录 shell</code></li>
+<li>通常有一个用户名为 root 的登录项，其用户 ID 是 0（超级用户）。</li>
+<li>加密口令字段包含了一个占位符。</li>
+<li>口令文件项中的某些字段可能为空。</li>
+<li>shell 字段包含了一个可执行文件名，被用作该用户的登录 shell。而如
+<code>/dev/null</code> 不是一个可执行文件，这是一个设备，目的是为了防止以用户 <code>squid</code>
+的名义登录系统。</li>
+<li>为了阻止一个特定用户登录系统，除了使用 <code>/dev/null</code> 外，可以有多种方式：
+<ol>
+<li><code>/bin/false</code> 以不成功（非 0）状态终止。</li>
+<li><code>/bin/true</code> 以成功（0）状态终止。</li>
+<li><code>nologin</code> 打印可定制的出错信息，然后以非 0 状态终止。</li>
+</ol>
+</li>
+<li>使用 nobody 用户名的一个目的是，使任何人都可以登录系统，但其用户 ID 和 组 ID
+不提供任何特权。</li>
+<li>提供 <code>finger</code> 命令的某些系统支持注释字段中的附加信息。</li>
+</ul>
+<p>下列是两个获取口令文件项的函数：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;pwd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">passwd</span> <span class="o">*</span><span class="nf">getpwuid</span><span class="p">(</span><span class="kt">uid_t</span> <span class="n">uid</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">passwd</span> <span class="o">*</span><span class="nf">getpwnam</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">name</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                            <span class="err">两个函数返回值：若成功，返回指针；若出错，返回</span> <span class="nb">NULL</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>passwd 结构通常是函数内部的静态变量，只要调用任一相关函数，其内容就会被重写</p>
+</blockquote>
+<p>下面的函数可用于查看整个口令文件：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;pwd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">passwd</span> <span class="o">*</span><span class="nf">getpwent</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                    <span class="err">返回值：若成功，返回指针；若出错或到达文件尾端，返回</span> <span class="nb">NULL</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">setpwent</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">endpwent</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>getpwent 返回口令文件中的下一个记录项。</li>
+<li>setpwent 用来将 getpwent 的读写地址指向密码文件开头。</li>
+<li>endpwent 用来关闭这些文件。</li>
+</ul>
+<h3 id="二阴影口令">二、阴影口令</h3>
+<p><strong>加密口令是经单向加密算法处理过的用户口令副本，因为该算法是单向的，故不能从加密口令猜测到原来的口令</strong>。</p>
+<p>现在，某些系统将加密口令存放在另一个通常被称为 <strong>阴影口令</strong>
+的文件中，通常是 <code>/etc/shadow</code>。包含下图所示字段：
+<img src="/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/c6-3.png"
+	width="2062"
+	height="766"
+	srcset="/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/c6-3_hu222f2bb1db53b1772c85dc2c74f3b50e_199519_480x0_resize_box_3.png 480w, /p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/c6-3_hu222f2bb1db53b1772c85dc2c74f3b50e_199519_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="269"
+		data-flex-basis="646px"
+	
+>
+普通口令文件 <code>/etc/passwd</code>
+可被各用户自由读取，而阴影口令文件不能被一般用户读取。</p>
+<p>与访问口令文件相似，也有一组函数：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;shadow.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">spwd</span> <span class="o">*</span><span class="nf">getspnam</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">name</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">spwd</span> <span class="o">*</span><span class="nf">getspent</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                            <span class="err">两个函数返回值：若成功，返回指针；若出错，返回</span> <span class="nb">NULL</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">setspent</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">endspent</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="三组文件">三、组文件</h3>
+<p>UNIX 组文件包含了下图所示字段：
+<img src="/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/c6-4.png"
+	width="2160"
+	height="562"
+	srcset="/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/c6-4_hu9c233fe6c8d3f958a77e7c31945e63ae_139039_480x0_resize_box_3.png 480w, /p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/c6-4_hu9c233fe6c8d3f958a77e7c31945e63ae_139039_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="384"
+		data-flex-basis="922px"
+	
+>
+相关函数如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;grp.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">group</span> <span class="o">*</span><span class="nf">getgrgid</span><span class="p">(</span><span class="kt">gid_t</span> <span class="n">gid</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">group</span> <span class="o">*</span><span class="nf">getgrnam</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">name</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                            <span class="err">两个函数返回值：若成功，返回指针；若出错，返回</span> <span class="nb">NULL</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">group</span> <span class="o">*</span><span class="nf">getgrent</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                    <span class="err">返回值：若成功，返回指针；若出错或到达文件尾端，返回</span> <span class="nb">NULL</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">setgrent</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">endgrent</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="四附属组-id">四、附属组 ID</h3>
+<p>一个用户不仅可以只属于一个组，也可以属于多至 16
+个组。在进行检查文件访问权限时，不仅将进程的有效组 ID 和文件的组 ID
+比较，还将所有附属组 ID 和文件的组 ID 进行比较。</p>
+<p>附属组的优点：不必经常显示更换组。</p>
+<p>下列函数可用于获取和设置附属组 ID：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">getgroups</span><span class="p">(</span><span class="kt">int</span> <span class="n">gidsetsize</span><span class="p">,</span> <span class="kt">gid_t</span> <span class="n">grouplist</span><span class="p">[]);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                            <span class="err">返回值：若成功，返回附属组</span> <span class="n">ID</span> <span class="err">数量；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;grp.h&gt;  /* on Linux */</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;  /* on FreeBSD, Mac OS X, and Solaris */</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">setgroups</span><span class="p">(</span><span class="kt">int</span> <span class="n">ngroups</span><span class="p">,</span> <span class="k">const</span> <span class="kt">gid_t</span> <span class="n">grouplist</span><span class="p">[]);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;grp.h&gt;  /* on Linux and Solaris */</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;  /* on FreeBSD and Mac OS X */</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">initgroups</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">username</span><span class="p">,</span> <span class="kt">gid_t</span> <span class="n">basegid</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                <span class="err">两个函数返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="五其他数据文件">五、其他数据文件</h3>
+<p>一般情况下，对于每个数据文件至少有 3 个函数：</p>
+<ol>
+<li>get 函数：读取下一个记录，如果需要，还会打开文件。</li>
+<li>set 函数：打开相应数据文件（如果未打开），然后反绕该文件。
+<blockquote>
+<p>反绕：个人理解是将读写地址指向文件开头。</p>
+</blockquote>
+</li>
+<li>end 函数：关闭相应数据文件。</li>
+</ol>
+<p>下图是有关文件的函数：
+<img src="/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/c6-6.png"
+	width="2222"
+	height="638"
+	srcset="/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/c6-6_hu8c51d59af062186b22499c973b222e55_248359_480x0_resize_box_3.png 480w, /p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/c6-6_hu8c51d59af062186b22499c973b222e55_248359_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="348"
+		data-flex-basis="835px"
+	
+></p>
+<h3 id="六登录账户记录">六、登录账户记录</h3>
+<p>大多数 UNIX 系统都提供下列两个数据文件：<br>
+<code>utmp</code>：记录当前登录到系统的各个用户。<br>
+<code>wtmp</code>：跟踪各个登录和注销事件。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">utmp</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">char</span> <span class="n">ut_line</span><span class="p">[</span><span class="mi">8</span><span class="p">];</span>  <span class="cm">/* tty line: &#34;ttyh0&#34;, &#34;ttyd0&#34;, &#34;ttyp0&#34;, ... */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">char</span> <span class="n">ut_name</span><span class="p">[</span><span class="mi">8</span><span class="p">];</span>  <span class="cm">/* login name */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">long</span> <span class="n">ut_time</span><span class="p">;</span>     <span class="cm">/* seconds since Epoch */</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在登录时，login 程序填写此结构，并将其写入到 utmp 文件中，同时也将其添加到 wtmp
+文件中。注销时，init 进程将 utmp 相对应的记录擦除（每个字节都填写 null
+字节），并将一个新纪录填写到 wtmp 文件中。</p>
+<h3 id="七系统标识">七、系统标识</h3>
+<p>uname 函数用来返回与主机和操作系统有关的信息：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/utsname.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">uname</span><span class="p">(</span><span class="k">struct</span> <span class="n">utsname</span> <span class="o">*</span><span class="n">name</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                    <span class="err">返回值：若成功，返回非负值；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>gethostname 函数用来返回主机名：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">gethostname</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">name</span><span class="p">,</span> <span class="kt">int</span> <span class="n">namelen</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                        <span class="err">返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="八时间和日期例程">八、时间和日期例程</h3>
+<p>TODO</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">Related content</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 标准 I/O 库"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">标准 I/O 库</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 文件和目录"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">文件和目录</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/%E6%96%87%E4%BB%B6-i/o/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E6%96%87%E4%BB%B6-i/o/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 文件 I/O"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">文件 I/O</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">
+        
+        
+            <div class="article-image">
+                <img src="/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post UNIX 基础知识"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">UNIX 基础知识</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="jiennyx/jiennyx.github.io"
+        issue-term="pathname"
+        
+        label="Comment"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+        2023 imxiejie
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.16.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
