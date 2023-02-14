@@ -6,7 +6,383 @@
         <description>Recent content in UNIX 环境高级编程 on imxiejie</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>en-us</language>
-        <lastBuildDate>Tue, 14 Feb 2023 11:23:45 +0800</lastBuildDate><atom:link href="https://www.imxiejie.me/categories/unix-%E7%8E%AF%E5%A2%83%E9%AB%98%E7%BA%A7%E7%BC%96%E7%A8%8B/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Tue, 14 Feb 2023 15:27:39 +0800</lastBuildDate><atom:link href="https://www.imxiejie.me/categories/unix-%E7%8E%AF%E5%A2%83%E9%AB%98%E7%BA%A7%E7%BC%96%E7%A8%8B/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>进程环境</title>
+        <link>https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/</link>
+        <pubDate>Tue, 14 Feb 2023 15:27:39 +0800</pubDate>
+        
+        <guid>https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/</guid>
+        <description>&lt;img src="https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/unix-book.jpeg" alt="Featured image of post 进程环境" /&gt;&lt;h3 id=&#34;一main-函数&#34;&gt;一、main 函数&lt;/h3&gt;
+&lt;p&gt;C 程序总是从 &lt;code&gt;main&lt;/code&gt; 函数开始执行，&lt;code&gt;main&lt;/code&gt; 函数的原型是：&lt;br&gt;
+&lt;code&gt;int main(int argc, char *argv[])&lt;/code&gt;&lt;br&gt;
+其中，&lt;em&gt;argc&lt;/em&gt; 是命令行参数数目，&lt;em&gt;argv&lt;/em&gt; 是指向参数的各个指针所构成的数组。&lt;/p&gt;
+&lt;p&gt;当内核执行 C 程序时，在调用 main
+前会先调用一个启动例程。可执行程序文件将此启动例程作为程序的起始地址&amp;ndash;这是由连接编辑器设置的。而连接编辑器由
+C 编译器调用。启动例程从内核中获取命令行参数和环境变量，然后为按上述方式调用
+main 函数做好安排。&lt;/p&gt;
+&lt;h3 id=&#34;二进程终止&#34;&gt;二、进程终止&lt;/h3&gt;
+&lt;p&gt;有 8 种方式可以使得进程终止，其中 5 种为正常终止：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;从 main 返回。&lt;/li&gt;
+&lt;li&gt;调用 exit。&lt;/li&gt;
+&lt;li&gt;调用 _exit 或 _Exit。&lt;/li&gt;
+&lt;li&gt;最后一个线程从其启动例程返回。&lt;/li&gt;
+&lt;li&gt;最后一个线程调用 pthread_exit。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;异常终止方式有 3 种：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;调用 abort。&lt;/li&gt;
+&lt;li&gt;接收到一个信号。&lt;/li&gt;
+&lt;li&gt;最后一个线程对取消请求做出响应。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;启动例程在 main 返回后会立即调用 exit。&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&#34;1-退出函数&#34;&gt;1. 退出函数&lt;/h4&gt;
+&lt;p&gt;有 3 个函数用于正常终止一个程序：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;stdlib.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;exit&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;status&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;_Exit&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;status&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;unistd.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;_exit&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;status&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;_exit 和 _Exit 会立即进入内核，而 exit 会先执行一些清理处理（执行一个标准 I/O 的清理关闭操作：对于所有打开流调用 fclose，将所有输出缓冲中的数据冲洗），然后返回内核。&lt;/p&gt;
+&lt;p&gt;3 个函数都带一个整形参数，称为
+&lt;strong&gt;终止状态&lt;/strong&gt;。如果&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;调用这些函数时不带终止状态&lt;/li&gt;
+&lt;li&gt;或 main 执行了一个无返回值的 return 语句&lt;/li&gt;
+&lt;li&gt;或 main 没有声明返回类型为整形&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;则该进程的终止状态是未定义的。但是，如果 main 的返回类型是整形，并且 main
+执行到最后一语句时返回（隐式返回），那么该进程的终止状态是 0。&lt;/p&gt;
+&lt;h4 id=&#34;2-函数-atexit&#34;&gt;2. 函数 atexit&lt;/h4&gt;
+&lt;p&gt;一个进程可以登记多至 32 个函数，这些函数将由 exit 自动调用。这些函数被称为
+&lt;strong&gt;终止处理程序&lt;/strong&gt;，可以使用 atexit 函数来登记这些函数：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;stdlib.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;atexit&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;func&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;));&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                                    &lt;span class=&#34;err&#34;&gt;返回值：若成功，返回&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;；若出错，返回非&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;exit
+调用这些函数的顺序与登记顺序相反，如果一个函数被登记多次，那么也会被调用多次。&lt;/p&gt;
+&lt;p&gt;下图展示了一个 C 程序如何启动，以及终止的各种方式：
+&lt;img src=&#34;https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/c7-2.png&#34;
+	width=&#34;2226&#34;
+	height=&#34;1464&#34;
+	srcset=&#34;https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/c7-2_hu31241fbea0c8cbb54a4e431339e7979e_283211_480x0_resize_box_3.png 480w, https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/c7-2_hu31241fbea0c8cbb54a4e431339e7979e_283211_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;152&#34;
+		data-flex-basis=&#34;364px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;注意：由图可知，内核使程序执行的唯一方法是调用一个 exec
+函数。进程自愿终止的唯一方法是显示或者隐式地调用 _exit 或 _Exit（通过调用 exit）。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;三命令行参数&#34;&gt;三、命令行参数&lt;/h3&gt;
+&lt;p&gt;当执行一个程序时，调用 exec 的进程可以将命令行参数传递给该新程序（如在 shell
+中执行一个新程序）。&lt;/p&gt;
+&lt;h3 id=&#34;四环境表&#34;&gt;四、环境表&lt;/h3&gt;
+&lt;p&gt;每个程序都有一张
+&lt;strong&gt;环境表&lt;/strong&gt;。和参数表一样，环境表也是一个字符指针数组，其中每个指针包含一个以
+null 结束的 C 字符串的地址。全局变量 environ 包含了该指针数组的地址：&lt;br&gt;
+&lt;code&gt;extern char **environ&lt;/code&gt;
+如下图所示，每个字符串结尾都有一个 null 字节，我们称 environ
+为 &lt;strong&gt;环境指针&lt;/strong&gt;，指针数组为环境表，其中各指针指向的字符串为 &lt;strong&gt;环境字符串&lt;/strong&gt;。
+&lt;img src=&#34;https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/c7-5.png&#34;
+	width=&#34;2098&#34;
+	height=&#34;712&#34;
+	srcset=&#34;https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/c7-5_hub0bfa87b16989ed49354974a773bcf14_121227_480x0_resize_box_3.png 480w, https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/c7-5_hub0bfa87b16989ed49354974a773bcf14_121227_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;294&#34;
+		data-flex-basis=&#34;707px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;注意：环境字符串由 name=value 这样的形式组成。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;五c-程序的存储空间布局&#34;&gt;五、C 程序的存储空间布局&lt;/h3&gt;
+&lt;p&gt;C 程序由以下几个部分组成：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;正文段。这是由 CPU
+执行的机器指令部分。通常，正文段是可共享的，另外，正文段常常是只读的，以防止程序由于意外而修改其指令。&lt;/li&gt;
+&lt;li&gt;初始化数据段。通常将此段称为数据段，它包含了程序中需要明确赋初值的变量。&lt;/li&gt;
+&lt;li&gt;未初始化数据段。通常将此段称为 bss
+段，在程序开始执行前，内核将此段中的数据初始化为 0 或空指针。&lt;/li&gt;
+&lt;li&gt;堆。通常在堆中进行动态存储分配。&lt;/li&gt;
+&lt;li&gt;栈。自动变量以及每次函数调用时所需保存的信息都存放在此段中。
+&lt;blockquote&gt;
+&lt;p&gt;自动变量：在计算机编程领域，自动变量指的是局部作用域变量，具体来说即是在控制流进入变量作用域时系统自动为其分配存储空间，在并在离开作用域时释放空间的一类变量。自动变量与局部变量所指的变量是同一种变量。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/c7-6.png&#34;
+	width=&#34;930&#34;
+	height=&#34;1108&#34;
+	srcset=&#34;https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/c7-6_hu2e70ebac963797d7f49fa81097588fae_116478_480x0_resize_box_3.png 480w, https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/c7-6_hu2e70ebac963797d7f49fa81097588fae_116478_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;83&#34;
+		data-flex-basis=&#34;201px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;从图中可以看到，未初始化数据段的内容并不存放在磁盘程序文件中。其原因是，内核在程序开始执行前将它们设置为
+0，需要存放在磁盘程序文件中的段只有正文段和初始化数据段。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;size 命令可以查看正文段、数据段和 bss 段的长度。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;六共享库&#34;&gt;六、共享库&lt;/h3&gt;
+&lt;p&gt;共享库使得可执行文件中不再需要包含公用的库函数，而只需要在所有进程都可引用的存储中保存这种库例程的一个副本。程序第一次执行或第一次调用某个库函数时，用动态链接方法将程序与共享库函数相链接。这样可以减少可执行文件的长度，但增加了一些运行时开销。共享库的另一个优点是可以用库函数的新版本代替老版本而无需对使用该库的程序重新连接编辑（假定参数的数目和类型都没有发生改变）。&lt;/p&gt;
+&lt;h3 id=&#34;七存储空间分配&#34;&gt;七、存储空间分配&lt;/h3&gt;
+&lt;p&gt;下面 3 个函数可用于存储空间动态分配：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;stdlib.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;malloc&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;size_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;size&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;calloc&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;size_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;nobj&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;size_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;size&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;realloc&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ptr&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;size_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;newsize&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                    &lt;span class=&#34;mi&#34;&gt;3&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;个函数的返回值：若成功，返回非空指针；若出错，返回&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;NULL&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;malloc&lt;/code&gt;：分配指定字节数的存储区，此存储区的初始值不确定。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;calloc&lt;/code&gt;：为指定数量指定长度的对象分配存储空间，该空间的每一位（bit）都初始化为 0。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;realloc&lt;/code&gt;：增加或减少以前分配区的长度。当增加长度时，可能需将以前分配区的内容移到另一个足够大的区域，以便在尾端提供增加的存储区，而新增区域内的初始值则不确定。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;下面的函数可用于释放存储空间：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;free&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ptr&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;free 释放的空间通常被送入可用存储区池，上面 3 个函数可在需要时进行再分配。&lt;/p&gt;
+&lt;p&gt;下面的操作可能会造成致命性错误：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;释放一个已经释放了的块。&lt;/li&gt;
+&lt;li&gt;嗲用 free 时所用的指针不是 3 个 malloc 的返回值。&lt;/li&gt;
+&lt;li&gt;如果一个进程调用 malloc 函数，但是却忘记调用 free
+函数，那么该进程占用的存储空间会连续增加，这被称为 &lt;strong&gt;泄露&lt;/strong&gt;。如果不调用 free
+函数释放不再使用的空间，那么进程地址空间将会慢慢增长，直至不再有空闲空间。此时，由于过多的换页开销，会造成性能下降。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;八环境变量&#34;&gt;八、环境变量&lt;/h3&gt;
+&lt;p&gt;下面的函数可以用于获取环境变量：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;stdlib.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;char&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;getenv&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;const&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;char&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                &lt;span class=&#34;err&#34;&gt;返回值：指向与&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;name&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;关联的&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;value&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;的指针；如未找到，返回&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;NULL&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;下面 3 个函数可以设置环境变量：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;stdlib.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;putenv&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;char&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;str&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                                &lt;span class=&#34;err&#34;&gt;函数返回值：若成功，返回&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;；若出错，返回非&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;setenv&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;const&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;char&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;const&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;char&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;value&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rewrite&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;unsetenv&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;const&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;char&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                                &lt;span class=&#34;err&#34;&gt;两个函数返回值：若成功，返回&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;；若出错，返回&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;putenv&lt;/code&gt;：取形式为 &lt;code&gt;name=value&lt;/code&gt; 的字符串，将其放入环境表中。如果 &lt;em&gt;name&lt;/em&gt;
+已存在，则先删除原来的定义。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;setenv&lt;/code&gt;：将 &lt;em&gt;name&lt;/em&gt; 设置为 &lt;em&gt;value&lt;/em&gt;。如果 &lt;em&gt;name&lt;/em&gt; 已存在：
+&lt;ol&gt;
+&lt;li&gt;如果 &lt;em&gt;rewrite&lt;/em&gt; 非 0，则先删除原有定义。&lt;/li&gt;
+&lt;li&gt;如果 &lt;em&gt;rewrite&lt;/em&gt; 为 0，则不做任何操作。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;unsetenv&lt;/code&gt;：删除 &lt;em&gt;name&lt;/em&gt; 的定义。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;注意：putenv 和 setenv 的区别。setenv 必须分配存储空间，以便根据参数创建
+name=value 的字符串。putenv 可以自由地将传递给它的参数字符串直接放到环境中。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Q: 这些函数如何修改环境表？&lt;br&gt;
+A:
+环境表和环境字符串通常位于进程存储空间的顶部，即栈之上。删除一个字符串只需要在环境表中找到该指针，然后将所有后续指针都向环境表首部移动一个位置。由于在存储空间顶部，不能往上增长也不能移动它之下的栈帧，两者组合使得空间的长度不能增加。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;修改一个现有的 &lt;em&gt;name&lt;/em&gt;。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;如果新 &lt;em&gt;value&lt;/em&gt; 的长度小于或等于现有 &lt;em&gt;value&lt;/em&gt;
+的长度，则只要将新字符串复制到原来字符串的空间。&lt;/li&gt;
+&lt;li&gt;如果新 &lt;em&gt;value&lt;/em&gt; 的长度大于现有 &lt;em&gt;value&lt;/em&gt; 的长度，则必须调用 malloc
+为新字符串分配空间，然后将新字符串复制到该空间中，接着使原有 &lt;em&gt;name&lt;/em&gt;
+的指针指向新分配区。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;如果要增加一个新的 &lt;em&gt;name&lt;/em&gt;，首先，必须调用 malloc 分配空间，然后将 name=value
+字符串复制到该空间中。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;如果是第一次增加 &lt;em&gt;name&lt;/em&gt;，则必须调用 malloc
+为新的指针表分配空间。接着，将原来的环境表复制到新分配区，并将指向新
+name=value
+的字符串的指针存放在该指针表的表尾，然后又将一个空指针放在其后，最后使
+environ
+指向新指针表。如果原来的环境表位于栈顶之上，那么必须将表移至堆中，但是，此表的大多数指针仍指向栈顶之上的各
+name=value 字符串。&lt;/li&gt;
+&lt;li&gt;如果不是第一次增加 &lt;em&gt;name&lt;/em&gt;，则可知已经在堆中存放了环境表，则只需要调用
+remalloc 分配比原来空间多存放一个指针的空间，然后将指向新 name=value
+字符串的指针存放在该表表尾，后面跟着一个空指针。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;九函数-setjmp-和-longjmp&#34;&gt;九、函数 setjmp 和 longjmp&lt;/h3&gt;
+&lt;p&gt;函数 setjmp 和 longjmp 可用于实现非局部 goto。非局部 goto 指的是，这不是由普通的
+C 语言 goto
+语句在一个函数内实现的跳转，而是在栈上跳过若干调用帧，返回到当前函数调用路径上的某一个函数中。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;setjmp.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;setjmp&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;jmp_buf&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;env&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                        &lt;span class=&#34;err&#34;&gt;返回值：若直接调用，返回&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;；若从&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;longjmp&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;返回，则为非&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;longjmp&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;jmp_buf&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;env&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;val&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;十函数-getrlimit-和-setrlimit&#34;&gt;十、函数 getrlimit 和 setrlimit&lt;/h3&gt;
+&lt;p&gt;每个进程都有一组资源限制，可以使用下面两个函数来查询和修改：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;sys/resource.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;getrlimit&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;resource&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rlimit&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;rlptr&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;setrlimit&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;resource&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;const&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rlimit&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;rlptr&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                            &lt;span class=&#34;err&#34;&gt;两个函数返回值：若成功，返回&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;；若出错，返回非&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;rlimit 的结构如下所示：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rlimit&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kt&#34;&gt;rlim_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rlim_cur&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;  &lt;span class=&#34;cm&#34;&gt;/* soft limit: current limit */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kt&#34;&gt;rlim_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rlim_max&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;  &lt;span class=&#34;cm&#34;&gt;/* hard limit: maximum value for rlim_cur */&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;在更改资源限制时，必须遵循以下 3 条规则：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;任何一个进程都可以将一个软限制值修改为小于或等于其硬限制值。&lt;/li&gt;
+&lt;li&gt;任何一个进程都可以降低其硬限制值，但它必须大于或等于其软限制值。这种降低，对普通用户来说是不可逆的。&lt;/li&gt;
+&lt;li&gt;只有超级用户进程可以提高硬限制值。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;资源限制只影响调用进程并由其子进程继承。为了影响所有后续进程，需要将在 shell
+上进行资源限制。&lt;/p&gt;
+</description>
+        </item>
+        <item>
         <title>系统数据文件和信息</title>
         <link>https://www.imxiejie.me/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/</link>
         <pubDate>Tue, 14 Feb 2023 11:23:45 +0800</pubDate>

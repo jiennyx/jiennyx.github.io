@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='一、main 函数 C 程序总是从 main 函数开始执行，main 函数的原型是：
+int main(int argc, char *argv[])
+其中，argc 是命令行参数数目，argv 是指向参数的各个指针所构成的数组。
+当内核执行 C 程序时，在调用 main 前会先调用一个启动例程。可执行程序文件将此启动例程作为程序的起始地址&amp;ndash;这是由连接编辑器设置的。而连接编辑器由 C 编译器调用。启动例程从内核中获取命令行参数和环境变量，然后为按上述方式调用 main 函数做好安排。
+二、进程终止 有 8 种方式可以使得进程终止，其中 5 种为正常终止：
+从 main 返回。 调用 exit。 调用 _exit 或 _Exit。 最后一个线程从其启动例程返回。 最后一个线程调用 pthread_exit。 异常终止方式有 3 种：
+调用 abort。 接收到一个信号。 最后一个线程对取消请求做出响应。 启动例程在 main 返回后会立即调用 exit。
+1. 退出函数 有 3 个函数用于正常终止一个程序：
+1 2 3 4 5 6 7 8 9 #include &amp;lt;stdlib.h&amp;gt; void exit(int status); void _Exit(int status); #include &amp;lt;unistd.'>
+<title>进程环境</title>
+
+<link rel='canonical' href='https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/'>
+
+<link rel="stylesheet" href="/scss/style.min.8191399262444ab68b72a18c97392f5349be20a1615d77445be51e974c144cff.css"><meta property='og:title' content='进程环境'>
+<meta property='og:description' content='一、main 函数 C 程序总是从 main 函数开始执行，main 函数的原型是：
+int main(int argc, char *argv[])
+其中，argc 是命令行参数数目，argv 是指向参数的各个指针所构成的数组。
+当内核执行 C 程序时，在调用 main 前会先调用一个启动例程。可执行程序文件将此启动例程作为程序的起始地址&amp;ndash;这是由连接编辑器设置的。而连接编辑器由 C 编译器调用。启动例程从内核中获取命令行参数和环境变量，然后为按上述方式调用 main 函数做好安排。
+二、进程终止 有 8 种方式可以使得进程终止，其中 5 种为正常终止：
+从 main 返回。 调用 exit。 调用 _exit 或 _Exit。 最后一个线程从其启动例程返回。 最后一个线程调用 pthread_exit。 异常终止方式有 3 种：
+调用 abort。 接收到一个信号。 最后一个线程对取消请求做出响应。 启动例程在 main 返回后会立即调用 exit。
+1. 退出函数 有 3 个函数用于正常终止一个程序：
+1 2 3 4 5 6 7 8 9 #include &amp;lt;stdlib.h&amp;gt; void exit(int status); void _Exit(int status); #include &amp;lt;unistd.'>
+<meta property='og:url' content='https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/'>
+<meta property='og:site_name' content='imxiejie'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2023-02-14T15:27:39&#43;08:00'/><meta property='article:modified_time' content='2023-02-14T15:27:39&#43;08:00'/><meta property='og:image' content='https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/unix-book.jpeg' />
+<meta name="twitter:title" content="进程环境">
+<meta name="twitter:description" content="一、main 函数 C 程序总是从 main 函数开始执行，main 函数的原型是：
+int main(int argc, char *argv[])
+其中，argc 是命令行参数数目，argv 是指向参数的各个指针所构成的数组。
+当内核执行 C 程序时，在调用 main 前会先调用一个启动例程。可执行程序文件将此启动例程作为程序的起始地址&amp;ndash;这是由连接编辑器设置的。而连接编辑器由 C 编译器调用。启动例程从内核中获取命令行参数和环境变量，然后为按上述方式调用 main 函数做好安排。
+二、进程终止 有 8 种方式可以使得进程终止，其中 5 种为正常终止：
+从 main 返回。 调用 exit。 调用 _exit 或 _Exit。 最后一个线程从其启动例程返回。 最后一个线程调用 pthread_exit。 异常终止方式有 3 种：
+调用 abort。 接收到一个信号。 最后一个线程对取消请求做出响应。 启动例程在 main 返回后会立即调用 exit。
+1. 退出函数 有 3 个函数用于正常终止一个程序：
+1 2 3 4 5 6 7 8 9 #include &amp;lt;stdlib.h&amp;gt; void exit(int status); void _Exit(int status); #include &amp;lt;unistd."><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/unix-book.jpeg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu87865fc6accf0c3d769e896d75694e81_162656_300x0_resize_q75_box.jpeg" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">imxiejie</a></h1>
+            <h2 class="site-description">Somebody has to win, so why not be me?</h2>
+        </div>
+    </header><ol class="social-menu">
+            
+                <li>
+                    <a 
+                        href='https://github.com/jiennyx'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>Dark Mode</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li>
+      <ol>
+        <li><a href="#一main-函数">一、main 函数</a></li>
+        <li><a href="#二进程终止">二、进程终止</a>
+          <ol>
+            <li><a href="#1-退出函数">1. 退出函数</a></li>
+            <li><a href="#2-函数-atexit">2. 函数 atexit</a></li>
+          </ol>
+        </li>
+        <li><a href="#三命令行参数">三、命令行参数</a></li>
+        <li><a href="#四环境表">四、环境表</a></li>
+        <li><a href="#五c-程序的存储空间布局">五、C 程序的存储空间布局</a></li>
+        <li><a href="#六共享库">六、共享库</a></li>
+        <li><a href="#七存储空间分配">七、存储空间分配</a></li>
+        <li><a href="#八环境变量">八、环境变量</a></li>
+        <li><a href="#九函数-setjmp-和-longjmp">九、函数 setjmp 和 longjmp</a></li>
+        <li><a href="#十函数-getrlimit-和-setrlimit">十、函数 getrlimit 和 setrlimit</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/">
+                <img src="/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_800x0_resize_q75_box.jpeg"
+                        srcset="/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_800x0_resize_q75_box.jpeg 800w, /p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_1600x0_resize_q75_box.jpeg 1600w"
+                        width="800" 
+                        height="298" 
+                        loading="lazy"
+                        alt="Featured image of post 进程环境" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/unix-%E7%8E%AF%E5%A2%83%E9%AB%98%E7%BA%A7%E7%BC%96%E7%A8%8B/" >
+                UNIX 环境高级编程
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/">进程环境</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Feb 14, 2023</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    3 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h3 id="一main-函数">一、main 函数</h3>
+<p>C 程序总是从 <code>main</code> 函数开始执行，<code>main</code> 函数的原型是：<br>
+<code>int main(int argc, char *argv[])</code><br>
+其中，<em>argc</em> 是命令行参数数目，<em>argv</em> 是指向参数的各个指针所构成的数组。</p>
+<p>当内核执行 C 程序时，在调用 main
+前会先调用一个启动例程。可执行程序文件将此启动例程作为程序的起始地址&ndash;这是由连接编辑器设置的。而连接编辑器由
+C 编译器调用。启动例程从内核中获取命令行参数和环境变量，然后为按上述方式调用
+main 函数做好安排。</p>
+<h3 id="二进程终止">二、进程终止</h3>
+<p>有 8 种方式可以使得进程终止，其中 5 种为正常终止：</p>
+<ol>
+<li>从 main 返回。</li>
+<li>调用 exit。</li>
+<li>调用 _exit 或 _Exit。</li>
+<li>最后一个线程从其启动例程返回。</li>
+<li>最后一个线程调用 pthread_exit。</li>
+</ol>
+<p>异常终止方式有 3 种：</p>
+<ol>
+<li>调用 abort。</li>
+<li>接收到一个信号。</li>
+<li>最后一个线程对取消请求做出响应。</li>
+</ol>
+<p><strong>启动例程在 main 返回后会立即调用 exit。</strong></p>
+<h4 id="1-退出函数">1. 退出函数</h4>
+<p>有 3 个函数用于正常终止一个程序：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">exit</span><span class="p">(</span><span class="kt">int</span> <span class="n">status</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">_Exit</span><span class="p">(</span><span class="kt">int</span> <span class="n">status</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">_exit</span><span class="p">(</span><span class="kt">int</span> <span class="n">status</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>_exit 和 _Exit 会立即进入内核，而 exit 会先执行一些清理处理（执行一个标准 I/O 的清理关闭操作：对于所有打开流调用 fclose，将所有输出缓冲中的数据冲洗），然后返回内核。</p>
+<p>3 个函数都带一个整形参数，称为
+<strong>终止状态</strong>。如果</p>
+<ol>
+<li>调用这些函数时不带终止状态</li>
+<li>或 main 执行了一个无返回值的 return 语句</li>
+<li>或 main 没有声明返回类型为整形</li>
+</ol>
+<p>则该进程的终止状态是未定义的。但是，如果 main 的返回类型是整形，并且 main
+执行到最后一语句时返回（隐式返回），那么该进程的终止状态是 0。</p>
+<h4 id="2-函数-atexit">2. 函数 atexit</h4>
+<p>一个进程可以登记多至 32 个函数，这些函数将由 exit 自动调用。这些函数被称为
+<strong>终止处理程序</strong>，可以使用 atexit 函数来登记这些函数：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">atexit</span><span class="p">(</span><span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">func</span><span class="p">)</span> <span class="p">(</span><span class="kt">void</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                    <span class="err">返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回非</span> <span class="mi">0</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>exit
+调用这些函数的顺序与登记顺序相反，如果一个函数被登记多次，那么也会被调用多次。</p>
+<p>下图展示了一个 C 程序如何启动，以及终止的各种方式：
+<img src="/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/c7-2.png"
+	width="2226"
+	height="1464"
+	srcset="/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/c7-2_hu31241fbea0c8cbb54a4e431339e7979e_283211_480x0_resize_box_3.png 480w, /p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/c7-2_hu31241fbea0c8cbb54a4e431339e7979e_283211_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="152"
+		data-flex-basis="364px"
+	
+></p>
+<blockquote>
+<p>注意：由图可知，内核使程序执行的唯一方法是调用一个 exec
+函数。进程自愿终止的唯一方法是显示或者隐式地调用 _exit 或 _Exit（通过调用 exit）。</p>
+</blockquote>
+<h3 id="三命令行参数">三、命令行参数</h3>
+<p>当执行一个程序时，调用 exec 的进程可以将命令行参数传递给该新程序（如在 shell
+中执行一个新程序）。</p>
+<h3 id="四环境表">四、环境表</h3>
+<p>每个程序都有一张
+<strong>环境表</strong>。和参数表一样，环境表也是一个字符指针数组，其中每个指针包含一个以
+null 结束的 C 字符串的地址。全局变量 environ 包含了该指针数组的地址：<br>
+<code>extern char **environ</code>
+如下图所示，每个字符串结尾都有一个 null 字节，我们称 environ
+为 <strong>环境指针</strong>，指针数组为环境表，其中各指针指向的字符串为 <strong>环境字符串</strong>。
+<img src="/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/c7-5.png"
+	width="2098"
+	height="712"
+	srcset="/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/c7-5_hub0bfa87b16989ed49354974a773bcf14_121227_480x0_resize_box_3.png 480w, /p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/c7-5_hub0bfa87b16989ed49354974a773bcf14_121227_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="294"
+		data-flex-basis="707px"
+	
+></p>
+<blockquote>
+<p>注意：环境字符串由 name=value 这样的形式组成。</p>
+</blockquote>
+<h3 id="五c-程序的存储空间布局">五、C 程序的存储空间布局</h3>
+<p>C 程序由以下几个部分组成：</p>
+<ul>
+<li>正文段。这是由 CPU
+执行的机器指令部分。通常，正文段是可共享的，另外，正文段常常是只读的，以防止程序由于意外而修改其指令。</li>
+<li>初始化数据段。通常将此段称为数据段，它包含了程序中需要明确赋初值的变量。</li>
+<li>未初始化数据段。通常将此段称为 bss
+段，在程序开始执行前，内核将此段中的数据初始化为 0 或空指针。</li>
+<li>堆。通常在堆中进行动态存储分配。</li>
+<li>栈。自动变量以及每次函数调用时所需保存的信息都存放在此段中。
+<blockquote>
+<p>自动变量：在计算机编程领域，自动变量指的是局部作用域变量，具体来说即是在控制流进入变量作用域时系统自动为其分配存储空间，在并在离开作用域时释放空间的一类变量。自动变量与局部变量所指的变量是同一种变量。</p>
+</blockquote>
+</li>
+</ul>
+<p><img src="/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/c7-6.png"
+	width="930"
+	height="1108"
+	srcset="/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/c7-6_hu2e70ebac963797d7f49fa81097588fae_116478_480x0_resize_box_3.png 480w, /p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/c7-6_hu2e70ebac963797d7f49fa81097588fae_116478_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="83"
+		data-flex-basis="201px"
+	
+></p>
+<p>从图中可以看到，未初始化数据段的内容并不存放在磁盘程序文件中。其原因是，内核在程序开始执行前将它们设置为
+0，需要存放在磁盘程序文件中的段只有正文段和初始化数据段。</p>
+<blockquote>
+<p>size 命令可以查看正文段、数据段和 bss 段的长度。</p>
+</blockquote>
+<h3 id="六共享库">六、共享库</h3>
+<p>共享库使得可执行文件中不再需要包含公用的库函数，而只需要在所有进程都可引用的存储中保存这种库例程的一个副本。程序第一次执行或第一次调用某个库函数时，用动态链接方法将程序与共享库函数相链接。这样可以减少可执行文件的长度，但增加了一些运行时开销。共享库的另一个优点是可以用库函数的新版本代替老版本而无需对使用该库的程序重新连接编辑（假定参数的数目和类型都没有发生改变）。</p>
+<h3 id="七存储空间分配">七、存储空间分配</h3>
+<p>下面 3 个函数可用于存储空间动态分配：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="o">*</span><span class="nf">malloc</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="o">*</span><span class="nf">calloc</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">nobj</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="o">*</span><span class="nf">realloc</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">ptr</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">newsize</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                    <span class="mi">3</span> <span class="err">个函数的返回值：若成功，返回非空指针；若出错，返回</span> <span class="nb">NULL</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li><code>malloc</code>：分配指定字节数的存储区，此存储区的初始值不确定。</li>
+<li><code>calloc</code>：为指定数量指定长度的对象分配存储空间，该空间的每一位（bit）都初始化为 0。</li>
+<li><code>realloc</code>：增加或减少以前分配区的长度。当增加长度时，可能需将以前分配区的内容移到另一个足够大的区域，以便在尾端提供增加的存储区，而新增区域内的初始值则不确定。</li>
+</ul>
+<p>下面的函数可用于释放存储空间：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">free</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">ptr</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>free 释放的空间通常被送入可用存储区池，上面 3 个函数可在需要时进行再分配。</p>
+<p>下面的操作可能会造成致命性错误：</p>
+<ul>
+<li>释放一个已经释放了的块。</li>
+<li>嗲用 free 时所用的指针不是 3 个 malloc 的返回值。</li>
+<li>如果一个进程调用 malloc 函数，但是却忘记调用 free
+函数，那么该进程占用的存储空间会连续增加，这被称为 <strong>泄露</strong>。如果不调用 free
+函数释放不再使用的空间，那么进程地址空间将会慢慢增长，直至不再有空闲空间。此时，由于过多的换页开销，会造成性能下降。</li>
+</ul>
+<h3 id="八环境变量">八、环境变量</h3>
+<p>下面的函数可以用于获取环境变量：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">char</span> <span class="o">*</span><span class="nf">getenv</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">name</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="err">返回值：指向与</span> <span class="n">name</span> <span class="err">关联的</span> <span class="n">value</span> <span class="err">的指针；如未找到，返回</span> <span class="nb">NULL</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>下面 3 个函数可以设置环境变量：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">putenv</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">str</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                <span class="err">函数返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回非</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">setenv</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">name</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">value</span><span class="p">,</span> <span class="kt">int</span> <span class="n">rewrite</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">unsetenv</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">name</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                <span class="err">两个函数返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li><code>putenv</code>：取形式为 <code>name=value</code> 的字符串，将其放入环境表中。如果 <em>name</em>
+已存在，则先删除原来的定义。</li>
+<li><code>setenv</code>：将 <em>name</em> 设置为 <em>value</em>。如果 <em>name</em> 已存在：
+<ol>
+<li>如果 <em>rewrite</em> 非 0，则先删除原有定义。</li>
+<li>如果 <em>rewrite</em> 为 0，则不做任何操作。</li>
+</ol>
+</li>
+<li><code>unsetenv</code>：删除 <em>name</em> 的定义。</li>
+</ul>
+<blockquote>
+<p>注意：putenv 和 setenv 的区别。setenv 必须分配存储空间，以便根据参数创建
+name=value 的字符串。putenv 可以自由地将传递给它的参数字符串直接放到环境中。</p>
+</blockquote>
+<p>Q: 这些函数如何修改环境表？<br>
+A:
+环境表和环境字符串通常位于进程存储空间的顶部，即栈之上。删除一个字符串只需要在环境表中找到该指针，然后将所有后续指针都向环境表首部移动一个位置。由于在存储空间顶部，不能往上增长也不能移动它之下的栈帧，两者组合使得空间的长度不能增加。</p>
+<ul>
+<li>
+<p>修改一个现有的 <em>name</em>。</p>
+<ol>
+<li>如果新 <em>value</em> 的长度小于或等于现有 <em>value</em>
+的长度，则只要将新字符串复制到原来字符串的空间。</li>
+<li>如果新 <em>value</em> 的长度大于现有 <em>value</em> 的长度，则必须调用 malloc
+为新字符串分配空间，然后将新字符串复制到该空间中，接着使原有 <em>name</em>
+的指针指向新分配区。</li>
+</ol>
+</li>
+<li>
+<p>如果要增加一个新的 <em>name</em>，首先，必须调用 malloc 分配空间，然后将 name=value
+字符串复制到该空间中。</p>
+<ol>
+<li>如果是第一次增加 <em>name</em>，则必须调用 malloc
+为新的指针表分配空间。接着，将原来的环境表复制到新分配区，并将指向新
+name=value
+的字符串的指针存放在该指针表的表尾，然后又将一个空指针放在其后，最后使
+environ
+指向新指针表。如果原来的环境表位于栈顶之上，那么必须将表移至堆中，但是，此表的大多数指针仍指向栈顶之上的各
+name=value 字符串。</li>
+<li>如果不是第一次增加 <em>name</em>，则可知已经在堆中存放了环境表，则只需要调用
+remalloc 分配比原来空间多存放一个指针的空间，然后将指向新 name=value
+字符串的指针存放在该表表尾，后面跟着一个空指针。</li>
+</ol>
+</li>
+</ul>
+<h3 id="九函数-setjmp-和-longjmp">九、函数 setjmp 和 longjmp</h3>
+<p>函数 setjmp 和 longjmp 可用于实现非局部 goto。非局部 goto 指的是，这不是由普通的
+C 语言 goto
+语句在一个函数内实现的跳转，而是在栈上跳过若干调用帧，返回到当前函数调用路径上的某一个函数中。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;setjmp.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">setjmp</span><span class="p">(</span><span class="n">jmp_buf</span> <span class="n">env</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                        <span class="err">返回值：若直接调用，返回</span> <span class="mi">0</span><span class="err">；若从</span> <span class="n">longjmp</span> <span class="err">返回，则为非</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">longjmp</span><span class="p">(</span><span class="n">jmp_buf</span> <span class="n">env</span><span class="p">,</span> <span class="kt">int</span> <span class="n">val</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="十函数-getrlimit-和-setrlimit">十、函数 getrlimit 和 setrlimit</h3>
+<p>每个进程都有一组资源限制，可以使用下面两个函数来查询和修改：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/resource.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">getrlimit</span><span class="p">(</span><span class="kt">int</span> <span class="n">resource</span><span class="p">,</span> <span class="k">struct</span> <span class="n">rlimit</span> <span class="o">*</span><span class="n">rlptr</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">setrlimit</span><span class="p">(</span><span class="kt">int</span> <span class="n">resource</span><span class="p">,</span> <span class="k">const</span> <span class="k">struct</span> <span class="n">rlimit</span> <span class="o">*</span><span class="n">rlptr</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                            <span class="err">两个函数返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回非</span> <span class="mi">0</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>rlimit 的结构如下所示：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">rlimit</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">rlim_t</span> <span class="n">rlim_cur</span><span class="p">;</span>  <span class="cm">/* soft limit: current limit */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">rlim_t</span> <span class="n">rlim_max</span><span class="p">;</span>  <span class="cm">/* hard limit: maximum value for rlim_cur */</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在更改资源限制时，必须遵循以下 3 条规则：</p>
+<ol>
+<li>任何一个进程都可以将一个软限制值修改为小于或等于其硬限制值。</li>
+<li>任何一个进程都可以降低其硬限制值，但它必须大于或等于其软限制值。这种降低，对普通用户来说是不可逆的。</li>
+<li>只有超级用户进程可以提高硬限制值。</li>
+</ol>
+<p>资源限制只影响调用进程并由其子进程继承。为了影响所有后续进程，需要将在 shell
+上进行资源限制。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">Related content</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 系统数据文件和信息"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">系统数据文件和信息</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 标准 I/O 库"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">标准 I/O 库</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 文件和目录"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">文件和目录</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/%E6%96%87%E4%BB%B6-i/o/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E6%96%87%E4%BB%B6-i/o/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 文件 I/O"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">文件 I/O</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">
+        
+        
+            <div class="article-image">
+                <img src="/p/unix-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post UNIX 基础知识"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">UNIX 基础知识</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="jiennyx/jiennyx.github.io"
+        issue-term="pathname"
+        
+        label="Comment"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+        2023 imxiejie
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.16.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
