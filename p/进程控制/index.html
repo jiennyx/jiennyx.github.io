@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='一、进程标识 每个进程都有一个非负整形表示的唯一进程 ID，虽然进程 ID 是唯一的，但它是可复用的，在进程终止后，其进程 ID 就成为可用的 ID 候选者。但大多数 UNIX 系统都实现了延迟复用算法，使得新进程的进程 ID 不同于最近终止进程所使用的进程 ID，这防止了将新进程认为是使用了某个同一 ID 的已终止进程。
+系统中有些专用进程，比如：
+0 号进程。ID 为 0 的进程通常是调度进程，也被称作 交换进程。该进程是内核的一部分，它不执行磁盘上的程序，因此也被称为 系统进程。 1 号进程。ID 为 1 的进程通常是 init 进程，在自举结束过程时由内核调用。该进程的程序文件是 /sbin/init。该进程负责在自举内核后启动一个 UNIX 系统，init 进程通常读取与系统有关的初始化文件并将系统引导到一个状态（比如多用户）。init 进程绝不会终止，它是一个普通的用户进程，但是它以超级用户特权运行。 注意：根据系统的不同，具体专用进程的实现也不同。
+下面的函数可以返回与进程有关的标识符：
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 #include &amp;lt;unistd.h&amp;gt; pid_t getpid(void); 返回值：进程的进程 ID pid_t getppid(void); 返回值：进程的父进程 ID uid_t getuid(void); 返回值：进程的实际用户 ID uid_t geteuid(void); 返回值：进程的有效用户 ID gid_t getgid(void); 返回值：进程的实际组 ID gid_t getegid(void); 返回值：调用进程的有效组 ID 二、函数 fork 一个现有的进程可以调用 fork 函数创建一个新进程：'>
+<title>进程控制</title>
+
+<link rel='canonical' href='https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/'>
+
+<link rel="stylesheet" href="/scss/style.min.8191399262444ab68b72a18c97392f5349be20a1615d77445be51e974c144cff.css"><meta property='og:title' content='进程控制'>
+<meta property='og:description' content='一、进程标识 每个进程都有一个非负整形表示的唯一进程 ID，虽然进程 ID 是唯一的，但它是可复用的，在进程终止后，其进程 ID 就成为可用的 ID 候选者。但大多数 UNIX 系统都实现了延迟复用算法，使得新进程的进程 ID 不同于最近终止进程所使用的进程 ID，这防止了将新进程认为是使用了某个同一 ID 的已终止进程。
+系统中有些专用进程，比如：
+0 号进程。ID 为 0 的进程通常是调度进程，也被称作 交换进程。该进程是内核的一部分，它不执行磁盘上的程序，因此也被称为 系统进程。 1 号进程。ID 为 1 的进程通常是 init 进程，在自举结束过程时由内核调用。该进程的程序文件是 /sbin/init。该进程负责在自举内核后启动一个 UNIX 系统，init 进程通常读取与系统有关的初始化文件并将系统引导到一个状态（比如多用户）。init 进程绝不会终止，它是一个普通的用户进程，但是它以超级用户特权运行。 注意：根据系统的不同，具体专用进程的实现也不同。
+下面的函数可以返回与进程有关的标识符：
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 #include &amp;lt;unistd.h&amp;gt; pid_t getpid(void); 返回值：进程的进程 ID pid_t getppid(void); 返回值：进程的父进程 ID uid_t getuid(void); 返回值：进程的实际用户 ID uid_t geteuid(void); 返回值：进程的有效用户 ID gid_t getgid(void); 返回值：进程的实际组 ID gid_t getegid(void); 返回值：调用进程的有效组 ID 二、函数 fork 一个现有的进程可以调用 fork 函数创建一个新进程：'>
+<meta property='og:url' content='https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/'>
+<meta property='og:site_name' content='imxiejie'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2023-02-15T13:35:27&#43;08:00'/><meta property='article:modified_time' content='2023-02-15T13:35:27&#43;08:00'/><meta property='og:image' content='https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/unix-book.jpeg' />
+<meta name="twitter:title" content="进程控制">
+<meta name="twitter:description" content="一、进程标识 每个进程都有一个非负整形表示的唯一进程 ID，虽然进程 ID 是唯一的，但它是可复用的，在进程终止后，其进程 ID 就成为可用的 ID 候选者。但大多数 UNIX 系统都实现了延迟复用算法，使得新进程的进程 ID 不同于最近终止进程所使用的进程 ID，这防止了将新进程认为是使用了某个同一 ID 的已终止进程。
+系统中有些专用进程，比如：
+0 号进程。ID 为 0 的进程通常是调度进程，也被称作 交换进程。该进程是内核的一部分，它不执行磁盘上的程序，因此也被称为 系统进程。 1 号进程。ID 为 1 的进程通常是 init 进程，在自举结束过程时由内核调用。该进程的程序文件是 /sbin/init。该进程负责在自举内核后启动一个 UNIX 系统，init 进程通常读取与系统有关的初始化文件并将系统引导到一个状态（比如多用户）。init 进程绝不会终止，它是一个普通的用户进程，但是它以超级用户特权运行。 注意：根据系统的不同，具体专用进程的实现也不同。
+下面的函数可以返回与进程有关的标识符：
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 #include &amp;lt;unistd.h&amp;gt; pid_t getpid(void); 返回值：进程的进程 ID pid_t getppid(void); 返回值：进程的父进程 ID uid_t getuid(void); 返回值：进程的实际用户 ID uid_t geteuid(void); 返回值：进程的有效用户 ID gid_t getgid(void); 返回值：进程的实际组 ID gid_t getegid(void); 返回值：调用进程的有效组 ID 二、函数 fork 一个现有的进程可以调用 fork 函数创建一个新进程："><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/unix-book.jpeg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu87865fc6accf0c3d769e896d75694e81_162656_300x0_resize_q75_box.jpeg" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">imxiejie</a></h1>
+            <h2 class="site-description">Somebody has to win, so why not be me?</h2>
+        </div>
+    </header><ol class="social-menu">
+            
+                <li>
+                    <a 
+                        href='https://github.com/jiennyx'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>Dark Mode</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li>
+      <ol>
+        <li><a href="#一进程标识">一、进程标识</a></li>
+        <li><a href="#二函数-fork">二、函数 fork</a></li>
+        <li><a href="#三函数-vfork">三、函数 vfork</a></li>
+        <li><a href="#四函数-exit">四、函数 exit</a></li>
+        <li><a href="#五函数-wait-和-waitpid">五、函数 wait 和 waitpid</a></li>
+        <li><a href="#六函数-waitid">六、函数 waitid</a></li>
+        <li><a href="#七函数-wait3-和-wait4">七、函数 wait3 和 wait4</a></li>
+        <li><a href="#八竞争条件">八、竞争条件</a></li>
+        <li><a href="#九函数-exec">九、函数 exec</a></li>
+        <li><a href="#十更改用户-id-和更改组-id">十、更改用户 ID 和更改组 ID</a>
+          <ol>
+            <li><a href="#1-函数-setreuid-和-setregid">1. 函数 setreuid 和 setregid</a></li>
+            <li><a href="#2-函数-seteuid-和-setegid">2. 函数 seteuid 和 setegid</a></li>
+            <li><a href="#3-组-id">3. 组 ID</a></li>
+          </ol>
+        </li>
+        <li><a href="#十一解释器文件">十一、解释器文件</a></li>
+        <li><a href="#十二函数-system">十二、函数 system</a></li>
+        <li><a href="#十三进程会计">十三、进程会计</a></li>
+        <li><a href="#十四用户标识">十四、用户标识</a></li>
+        <li><a href="#十五进程调度">十五、进程调度</a></li>
+        <li><a href="#十六进程时间">十六、进程时间</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/">
+                <img src="/p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_800x0_resize_q75_box.jpeg"
+                        srcset="/p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_800x0_resize_q75_box.jpeg 800w, /p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_1600x0_resize_q75_box.jpeg 1600w"
+                        width="800" 
+                        height="298" 
+                        loading="lazy"
+                        alt="Featured image of post 进程控制" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/unix-%E7%8E%AF%E5%A2%83%E9%AB%98%E7%BA%A7%E7%BC%96%E7%A8%8B/" >
+                UNIX 环境高级编程
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/">进程控制</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Feb 15, 2023</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    6 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h3 id="一进程标识">一、进程标识</h3>
+<p>每个进程都有一个非负整形表示的唯一进程 ID，虽然进程 ID
+是唯一的，但它是可复用的，在进程终止后，其进程 ID 就成为可用的 ID
+候选者。但大多数 UNIX 系统都实现了延迟复用算法，使得新进程的进程 ID
+不同于最近终止进程所使用的进程 ID，这防止了将新进程认为是使用了某个同一 ID
+的已终止进程。</p>
+<p>系统中有些专用进程，比如：</p>
+<ul>
+<li><strong>0</strong> 号进程。ID 为 0 的进程通常是调度进程，也被称作
+<strong>交换进程</strong>。该进程是内核的一部分，它不执行磁盘上的程序，因此也被称为
+<strong>系统进程</strong>。</li>
+<li><strong>1</strong> 号进程。ID 为 1 的进程通常是 init
+进程，在自举结束过程时由内核调用。该进程的程序文件是
+<code>/sbin/init</code>。该进程负责在自举内核后启动一个 UNIX 系统，init
+进程通常读取与系统有关的初始化文件并将系统引导到一个状态（比如多用户）。init
+进程绝不会终止，它是一个普通的用户进程，但是它以超级用户特权运行。</li>
+</ul>
+<blockquote>
+<p>注意：根据系统的不同，具体专用进程的实现也不同。</p>
+</blockquote>
+<p>下面的函数可以返回与进程有关的标识符：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">pid_t</span> <span class="nf">getpid</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                                        <span class="err">返回值：进程的进程</span> <span class="n">ID</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">pid_t</span> <span class="nf">getppid</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                                        <span class="err">返回值：进程的父进程</span> <span class="n">ID</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">uid_t</span> <span class="nf">getuid</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                                    <span class="err">返回值：进程的实际用户</span> <span class="n">ID</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">uid_t</span> <span class="nf">geteuid</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                                    <span class="err">返回值：进程的有效用户</span> <span class="n">ID</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">gid_t</span> <span class="nf">getgid</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                                        <span class="err">返回值：进程的实际组</span> <span class="n">ID</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">gid_t</span> <span class="nf">getegid</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                                    <span class="err">返回值：调用进程的有效组</span> <span class="n">ID</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="二函数-fork">二、函数 fork</h3>
+<p>一个现有的进程可以调用 fork 函数创建一个新进程：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">pid_t</span> <span class="nf">fork</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="err">返回值：若成功，子进程返回</span> <span class="mi">0</span><span class="err">，父进程返回子进程</span> <span class="n">ID</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>由 fork 创建的新进程称作 <strong>子进程</strong>。fork 调用一次但返回两次，父进程返回子进程
+ID，子进程返回 0。原因是：父进程可以有多个子进程，但没有一个函数可以获取子进程
+ID。而一个进程只会有一个父进程，可通过 getppid 函数获取其父进程 ID。</p>
+<p>在 fork 调用完成后，各自继续执行 fork
+之后的指令。子进程是父进程的副本。比如：子进程获取父进程数据空间、堆和栈的副本。</p>
+<blockquote>
+<p>注意：子进程拥有副本，父子进程不共享这些存储空间，父子进程共享正文段。</p>
+</blockquote>
+<p>由于在 fork 之后经常跟随着
+exec，所以现在的很多实现并不执行一个父进程的数据段、堆和栈的完全副本。取而代之的是，使用了
+<strong>写时复制（Copy-On-Write，COW）</strong>
+技术。这些区域由父子进程共享，内核把它们的访问权限改为只读。如果父子进程中的一个试图修改这些区域，内核会只为修改区域的那块内存制作一个副本，通过是虚拟存储系统中的一页。</p>
+<p>一般来说，在 fork
+之后，父子进程谁先执行是不确定的，取决于内核使用的调度算法。fork
+的另外一个特性是，父进程的所有打开文件描述符都会被复制到子进程中，父子进程的每个相同的打开描述符共享一个文件表项。如下图所示：
+<img src="/p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/c8-2.png"
+	width="1938"
+	height="1456"
+	srcset="/p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/c8-2_hu1962c4810321a428b4bea70fb6867779_314267_480x0_resize_box_3.png 480w, /p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/c8-2_hu1962c4810321a428b4bea70fb6867779_314267_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="133"
+		data-flex-basis="319px"
+	
+>
+在 fork 之后处理文件描述符有以下两种常见的情况：</p>
+<ol>
+<li>父进程等待子进程完成。在这种情况下，父进程无需对其描述符做任何的处理，在子进程终止后，它曾读、写过的任一共享描述符的文件表项已经做了更新。</li>
+<li>父进程和子进程执行不同的程序段。在这种情况下，在 fork
+之后，父子进程会分别关闭它们不需要使用的文件描述符，这样就不会干扰对方使用的描述符。（例如网络服务进程）</li>
+</ol>
+<p>除了打开文件外，还有很多属性也由子进程继承，这些属性如下：</p>
+<ul>
+<li>实际用户 ID、实际组 ID、有效用户 ID、有效组 ID。</li>
+<li>附属组 ID。</li>
+<li>进程组 ID。</li>
+<li>会话 ID。</li>
+<li>控制终端。</li>
+<li>设置用户 ID 标志和设置组 ID 标志。</li>
+<li>当前工作目录。</li>
+<li>根目录。</li>
+<li>文件模式创建屏蔽字。</li>
+<li>信号屏蔽和安排。</li>
+<li>对任一打开文件描述符执行时关闭标志。</li>
+<li>环境。</li>
+<li>连接的共享存储段。</li>
+<li>存储映像。</li>
+<li>资源限制。</li>
+</ul>
+<p>父子进程的区别如下：</p>
+<ul>
+<li>fork 的返回值不同。</li>
+<li>进程 ID 不同。</li>
+<li>各自的父进程 ID 不同。</li>
+<li>子进程的 tms_utime、tms_stime、tms_cutime 和 tms_ustime 的值设置为 0。</li>
+<li>子进程不继承父进程设置的文件锁。</li>
+<li>子进程的未处理闹钟被清除。</li>
+<li>子进程的未处理信号集设置为空集。</li>
+</ul>
+<p>fork 失败的主要原因有两个：</p>
+<ol>
+<li>系统中已经有了太多的进程。</li>
+<li>该实际用户 ID 的进程总数超过了系统限制（CHILD_MAX 规定了每个实际用户 ID
+在任何时刻可拥有的最大进程数）。</li>
+</ol>
+<p>fork 有以下两种用法：</p>
+<ol>
+<li>一个父进程希望复制自己，使父进程和子进程分别执行不同的代码段，如 Web 服务器。</li>
+<li>一个进程要执行一个不同的程序。如 shell，在这种情况下，子进程从 fork
+返回之后立即调用 exec。</li>
+</ol>
+<h3 id="三函数-vfork">三、函数 vfork</h3>
+<p>vfork 函数的调用序列和返回值与 fork 相同，但两者语义不同。vfork
+函数用于创建一个新进程，而该新进程的目的是执行一个新程序。vfork 和 fork
+一样都创建一个子进程，但是它并不将父进程的地址空间完全复制到子进程中，因为子进程会立即调用
+exec（或 exit），于是也就不会引用到该地址空间。不过在子进程调用 exec 或 exit
+前，它会在父进程的空间中运行。</p>
+<p>vfork 和 fork 的另一个区别是：vfork 保证子进程先运行，在它调用 exec 或 exit
+之后父进程才可能被调度运行。而如果子进程在调用这两个函数前依赖于父进程的进一步动作，那么将会导致死锁。</p>
+<h3 id="四函数-exit">四、函数 exit</h3>
+<p>回顾一遍进程终止的 5 种正常方式和 3 种异常方式，正常终止：</p>
+<ol>
+<li>在 main 函数内执行 return 语句。</li>
+<li>调用 exit 函数。</li>
+<li>调用 _exit 或 _Exit 函数。</li>
+<li>最后一个线程在其启动例程中执行 return 语句。</li>
+<li>最后一个线程调用 pthread_exit 函数。</li>
+</ol>
+<p>异常终止：</p>
+<ol>
+<li>调用 abort。</li>
+<li>当进程接收到某些信号时。</li>
+<li>最后一个线程对取消请求做出响应。</li>
+</ol>
+<p>对于上述的任一情形，我们都希望终止进程能够通知其父进程是如何终止的。对于
+3 个终止函数，实现这一点的方法是，将其推出状态作为参数传递给函数。在异常终止情况下，内核产生一个指示其终止原因的终止状态。在任一情况下，父进程都可以调用
+wait 或 waitpid 函数获取子进程终止状态。</p>
+<p>不管进程如何终止，最后都会执行内核中的同一段代码，这段代码为相应进程关闭所有打开描述符，释放它所使用的存储器等。</p>
+<p><code>孤儿进程</code>：如果一个父进程在子进程之前终止，那么这个子进程就会变成孤儿进程，init
+会收养这些子进程，即这些子进程的父进程会变为 init
+进程。操作过程大致是：当一个进程终止时，内核会逐个检查所有活动进程，以判断它是否是将要终止进程的子进程，如果是，则将该进程的父进程
+ID 改为 1。</p>
+<blockquote>
+<p>故一个进程是 init 的子进程时，可能是 init 直接产生的子进程，也可能是被 init
+所收养的进程。</p>
+</blockquote>
+<p><code>僵死进程</code>：如果子进程完全消失了，父进程在最终准备好检查子进程是否终止时是无法获取其终止状态的。内核为每个终止子进程保存了一定量的信息，所以当终止进程的父进程调用
+wait 或 waitpid 时，可以得到这些信息。这些信息至少包含进程
+ID、该进程的终止状态以及该进程使用的 CPU
+时间总量。内核可以释放终止进程所使用的存储区，关闭其所有打开文件。一个已经终止，但是父进程尚未进程善后处理（即获取终止进程的有关信息，释放它所占用的资源）的进程被称为僵死进程。</p>
+<h3 id="五函数-wait-和-waitpid">五、函数 wait 和 waitpid</h3>
+<p>当一个进程终止时，内核就向其父进程发送 SIGCHLD
+信号。因为子进程终止是个异步时间，所以这种信号也是内核向父进程发送的异步通知。父进程可以选择忽略该信号，或者提供一个在信号发生时即被调用执行的信号处理函数。</p>
+<p>下面两个函数可用于获取子进程的终止状态：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/wait.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">pid_t</span> <span class="nf">wait</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">statloc</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">pid_t</span> <span class="nf">waitpid</span><span class="p">(</span><span class="kt">pid_t</span> <span class="n">pid</span><span class="p">,</span> <span class="kt">int</span> <span class="o">*</span><span class="n">statloc</span><span class="p">,</span> <span class="kt">int</span> <span class="n">options</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                    <span class="err">两个函数返回值：若成功，返回进程</span> <span class="n">ID</span><span class="err">；若出错，返回</span> <span class="mi">0</span> <span class="err">或</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>调用 wait 或 waitpid 可能会发生什么？</p>
+<ul>
+<li>如果所有子进程还在运行，则阻塞。</li>
+<li>如果一个子进程已经终止，正等待其父进程获取终止状态，则取得该子进程的终止状态后立即返回。</li>
+<li>如果没有任何子进程，则立即出错返回。</li>
+</ul>
+<p>这两个函数的区别是：</p>
+<ul>
+<li>在一个子进程终止前，wait 会使调用者阻塞，而 waitpid
+有一选项，可以使调用者不阻塞。</li>
+<li>waitpid 并不等待其调用后的第一个终止子进程，可以控制它所等待的子进程。</li>
+</ul>
+<p>如果子进程已经终止，并且是一个僵死进程，则 wait
+立即返回并取得该子进程的状态；否则 wait
+将使调用者阻塞，直到一个子进程终止。如果调用者阻塞并且它有多个子进程，那么将在任一个子进程终止时，wait
+立即返回。因为 wait 返回进程 ID，故可以知道是哪个子进程终止。</p>
+<p>而 waitpid 根据参数的不同则提供了更加丰富的功能：</p>
+<ul>
+<li><code>pid == -1</code>：等待任一子进程，在这种情况下，和 wait 等效。</li>
+<li><code>pid &gt; 0</code>：等待进程 ID 和 <em>pid</em> 相等的子进程。</li>
+<li><code>pid == 0</code>：等待组 ID 等于调用进程组 ID 的任一子进程。</li>
+<li><code>pid &lt; -1</code>：等待组 ID 等于 <em>pid</em> 绝对值的任一子进程。</li>
+</ul>
+<h3 id="六函数-waitid">六、函数 waitid</h3>
+<p>waitid 同样可以取得进程终止状态：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/wait.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">waitid</span><span class="p">(</span><span class="kt">idtype_t</span> <span class="n">idtype</span><span class="p">,</span> <span class="kt">id_t</span> <span class="n">id</span><span class="p">,</span> <span class="kt">siginfo_t</span> <span class="o">*</span><span class="n">infop</span><span class="p">,</span> <span class="kt">int</span> <span class="n">options</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                        <span class="err">返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>waitid 要更灵活，根据 idtype 的不同：</p>
+<ul>
+<li><code>P_PID</code>：等待一特定进程：<em>id</em> 包含要等待子进程的进程 ID。</li>
+<li><code>P_PGID</code>：等待一特定进程组中的任一子进程：id 包含要等待子进程的进程组 ID。</li>
+<li><code>P_ALL</code>：等待任一子进程，忽略 ID。</li>
+</ul>
+<h3 id="七函数-wait3-和-wait4">七、函数 wait3 和 wait4</h3>
+<p>下面两个函数则返回了资源统计信息：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/wait.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/time.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/resource.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">pid_t</span> <span class="nf">wait3</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">statloc</span><span class="p">,</span> <span class="kt">int</span> <span class="n">options</span><span class="p">,</span> <span class="k">struct</span> <span class="n">rusage</span> <span class="o">*</span><span class="n">rusage</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">pid_t</span> <span class="nf">wait4</span><span class="p">(</span><span class="kt">pid_t</span> <span class="n">pid</span><span class="p">,</span> <span class="kt">int</span> <span class="o">*</span><span class="n">statloc</span><span class="p">,</span> <span class="kt">int</span> <span class="n">options</span><span class="p">,</span> <span class="k">struct</span> <span class="n">rusage</span> <span class="o">*</span><span class="n">rusage</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                        <span class="err">两个函数返回值：若成功，返回进程</span> <span class="n">ID</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>资源统计信息包括用户 CPU 时间总量、系统 CPU
+时间总量、缺页次数、接收到信号的次数等。</p>
+<h3 id="八竞争条件">八、竞争条件</h3>
+<p>当多个进程都企图对共享数据进行某种处理，而最后的结果又取决于进程运行的顺序时，则认为发生了竞争条件。</p>
+<h3 id="九函数-exec">九、函数 exec</h3>
+<p>当进程调用一种 exec 函数时，该进程执行的程序完全替换为新程序。而新程序则从其
+main 函数开始执行。因为调用 exec 并不创建新进程，所以前后的前程 ID
+并未改变。exec
+只是用磁盘上的一个新程序替换了当前进程的正文段、数据段、堆段和栈段。</p>
+<p>下面是 7 个 exec 函数：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">execl</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathanme</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">arg0</span><span class="p">,</span> <span class="p">...</span> <span class="cm">/* (char *)</span><span class="mi">0</span> <span class="err">*/</span> <span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">execv</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="k">const</span> <span class="n">argv</span><span class="p">[]);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">execle</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">arg0</span><span class="p">,</span> <span class="p">...</span> <span class="cm">/* (char *)</span><span class="mi">0</span><span class="p">,</span> <span class="kt">char</span>
+</span></span><span class="line"><span class="cl"><span class="o">*</span><span class="k">const</span> <span class="n">envp</span><span class="p">[]</span> <span class="err">*/</span> <span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">execve</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pathname</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="k">const</span> <span class="n">argv</span><span class="p">[],</span> <span class="kt">char</span> <span class="o">*</span><span class="k">const</span> <span class="n">envp</span><span class="p">[]);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">execlp</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">filename</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">arg0</span><span class="p">,</span> <span class="p">...</span> <span class="cm">/* (char *)</span><span class="mi">0</span> <span class="err">*/</span> <span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">execvp</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">filename</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="k">const</span> <span class="n">argv</span><span class="p">[]);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">fexecve</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="k">const</span> <span class="n">argv</span><span class="p">[],</span> <span class="kt">char</span> <span class="o">*</span><span class="k">const</span> <span class="n">envp</span><span class="p">[]);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                <span class="mi">7</span> <span class="err">个函数返回值：若出错，返回</span> <span class="o">-</span><span class="mi">1</span><span class="err">；若成功，不返回</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这 7 个函数的区别：</p>
+<ol>
+<li>前 4 个函数取路径名为参数，后两个函数取文件名作为参数，最后一个函数取文件描述符作为参数，当指定 <em>filename</em> 为参数时：
+<ul>
+<li>如果 <em>filename</em> 包含 <code>/</code>，则将其视为路径名。</li>
+<li>否则就按 PATH 环境变量，在它所指定的各目录中搜寻可执行文件。
+<blockquote>
+<p>PATH 变量包含一张目录表（称为路径前缀），目录之间用冒号 <code>:</code> 分隔。</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li>第二个区别与参数表的传递有关（l 表示 list，v 表示 vector）。函数
+execl、execlp 和 execle
+要求将新程序的每个命令行参数都说明为一个单独的参数，以空指针结尾。对于另外
+4 个函数，则应先构造一个指向各参数的指针数组，然后将该数组地址作为这
+4 个函数的参数。</li>
+<li>第三个区别与新程序传递环境表有关。以 e 结尾的 3 个函数（execle、execve
+和 fexecve）可以传递一个指向环境字符串指针数组的指针。其他
+4 个函数则使用调用进程中的 environ 变量为新程序复制现有的环境。</li>
+</ol>
+<p>执行 exec 后，新程序从调用进程继承了以下属性：</p>
+<ul>
+<li>进程 ID 和父进程 ID。</li>
+<li>实际用户 ID 和实际组 ID。</li>
+<li>附属组 ID。</li>
+<li>进程组 ID。</li>
+<li>会话 ID。</li>
+<li>控制终端。</li>
+<li>闹钟尚余留的时间。</li>
+<li>当前工作目录。</li>
+<li>根目录。</li>
+<li>文件模式创建屏蔽字。</li>
+<li>文件锁。</li>
+<li>进程信号屏蔽。</li>
+<li>未处理信号。</li>
+<li>资源限制。</li>
+<li>友好值（nice 值）。</li>
+<li>tms_utime、tms_stime、tms_cutime 以及 tms_cstime 值。</li>
+</ul>
+<p>对每个打开文件的处理与每个描述符的执行时关闭（close-on-exec）标志值有关。进程中每个打开描述符都有一个执行时关闭标志，若设置了此标志，则在执行
+exec 时关闭描述符；否则该描述符仍打开。</p>
+<blockquote>
+<p>注意：在 exec 前后，实际用户 ID 和实际组 ID 保持不变，而有效用户 ID 和有效组
+ID 则取决于所执行程序文件的设置用户 ID 位和设置组 ID
+位是否设置。如果新程序的设置 ID 位已设置，则有效 ID 变为对应的文件所有者 ID。</p>
+</blockquote>
+<p>这 7 个函数的关系如下图所示：
+<img src="/p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/c8-15.png"
+	width="2024"
+	height="848"
+	srcset="/p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/c8-15_hu2cbdd2139cc1baa3f26ca5b3a985d984_141620_480x0_resize_box_3.png 480w, /p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/c8-15_hu2cbdd2139cc1baa3f26ca5b3a985d984_141620_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="238"
+		data-flex-basis="572px"
+	
+></p>
+<h3 id="十更改用户-id-和更改组-id">十、更改用户 ID 和更改组 ID</h3>
+<p>一般而言，在设计应用时，总是试图使用 <strong>最小特权</strong>
+模型。依照此模型，我们的程序应当只具有未完成给定任务所需的最小特权。（在设计接口时也一样）</p>
+<p>下面的函数可用于修改实际 ID 和有效 ID：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">setuid</span><span class="p">(</span><span class="kt">uid_t</span> <span class="n">uid</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">setgid</span><span class="p">(</span><span class="kt">gid_t</span> <span class="n">gid</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                <span class="err">两个函数返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>修改用户 ID 的规则（组 ID 同样适用）：</p>
+<ol>
+<li>若进程拥有超级用户特权，则 setuid 将实际用户 ID、有效用户 ID 以及保存的设置用户 ID 设置为 <em>uid</em>。</li>
+<li>若进程没有超级用户特权，但是 <em>uid</em> 等于实际用户 ID 或等于保存的设置用户
+ID，则 setuid 只将有效用户 ID 设置为 <em>uid</em>。不更改实际用户 ID
+和保存的设置用户 ID。</li>
+<li>如果上面两个条件都不满足，则 errno 设置为 EPERM，并返回 -1。</li>
+</ol>
+<p>关于内核所维护的 3 个用户 ID，还要注意以下几点：</p>
+<ol>
+<li>只有超级用户进程可以修改实际用户 ID。</li>
+<li>仅当对程序文件设置了设置用户 ID 位时，exec 函数才设置有效用户 ID。</li>
+<li>保存的设置用户 ID 时由 exec 复制有效用户 ID 得到的。</li>
+</ol>
+<h4 id="1-函数-setreuid-和-setregid">1. 函数 setreuid 和 setregid</h4>
+<p>下面两个函数用于交换实际 ID 与有效 ID 的值：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">setreuid</span><span class="p">(</span><span class="kt">uid_t</span> <span class="n">ruid</span><span class="p">,</span> <span class="kt">uid_t</span> <span class="n">euid</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">setregid</span><span class="p">(</span><span class="kt">gid_t</span> <span class="n">rgid</span><span class="p">,</span> <span class="kt">gid_t</span> <span class="n">egid</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                <span class="err">两个函数返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>如果其中任一参数的值为 -1，则表示相应的 ID 位应当保持不变。<br>
+<strong>交换规则</strong>：一个非特权用户总是能交换实际用户 ID 和有效用户
+ID。这就允许一个设置用户 ID 程序交换成用户的普通权限，以后又可再次交换回设置用户
+ID 权限。POSIX.1 引入了保存的设置用户 ID
+后，其规则也相应加强，它允许一个非特权用户将其有效用户 ID 设置为保存的设置用户
+ID。</p>
+<h4 id="2-函数-seteuid-和-setegid">2. 函数 seteuid 和 setegid</h4>
+<p>下面两个函数<strong>只修改</strong>有效用户 ID 和有效组 ID：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">seteuid</span><span class="p">(</span><span class="kt">uid_t</span> <span class="n">uid</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">setegid</span><span class="p">(</span><span class="kt">gid_t</span> <span class="n">gid</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                <span class="err">两个函数返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>一个非特权用户可以将其有效用户 ID 设置为其实际用户 ID 或保存的设置用户
+ID。对一个特权用户则可将其有效用户 ID 设置为 <em>uid</em>。</p>
+<p>具体规则如下图所示：
+<img src="/p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/c8-19.png"
+	width="2122"
+	height="1076"
+	srcset="/p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/c8-19_hud04fb6c1bd0558799cae49c848080f1a_274728_480x0_resize_box_3.png 480w, /p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/c8-19_hud04fb6c1bd0558799cae49c848080f1a_274728_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="197"
+		data-flex-basis="473px"
+	
+></p>
+<h4 id="3-组-id">3. 组 ID</h4>
+<p>所有适用于用户 ID 的方式都适用于组 ID，而附属组 ID 不受影响。</p>
+<h3 id="十一解释器文件">十一、解释器文件</h3>
+<p><strong>解释器文件</strong> 是一个文本文件，其起始行的形式为：<br>
+<code>#! pathname [optional-argument]</code><br>
+感叹号和 <em>pathname</em> 之间的空格是可选的，具体实例如下：<br>
+<code>#! /bin/sh</code><br>
+<em>pathname</em> 通常是绝对路径名，对它不进行什么特殊处理（不使用 PATH
+进行路径搜索），对这种文件的识别是由内核作为 exec
+系统调用处理的一部分来完成的。内核使调用 exec
+函数的进程实际执行的不是解释器文件，而是在解释器文件中第一行 <em>pathname</em>
+所指定的文件。</p>
+<h3 id="十二函数-system">十二、函数 system</h3>
+<p>system 函数可用于执行一个命令字符串：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">system</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">cmdstring</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                                                <span class="err">具体返回值如下：</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>如果 <em>cmdstring</em> 是一个空指针，则仅当命令处理程序可用时，system 返回非 0 值。</p>
+<p>因为 system 在其实现中调用了 fork、exec 和 waitpid，因此有 3 种返回值：</p>
+<ol>
+<li>fork 失败或 waitpid 返回除 EINTR 之外的错误，则 system 返回 -1，并且设置
+errno 以指示错误类型。</li>
+<li>如果 exec 失败（表示不能执行 shell），则其返回值如同 shell 执行了
+exit(127) 一样。</li>
+<li>否则 3 个函数都成功，那么 system 的返回值是 shell 的终止状态。</li>
+</ol>
+<p>system 相比较于 fork 和 exec 的优点：
+system 进行了各种所需的出错处理和信号处理。</p>
+<h3 id="十三进程会计">十三、进程会计</h3>
+<p>大多数 UNIX
+系统都会提供一个选项以进行进程会计，启用该选项后，每当进程结束时内核就会写一个会计记录。典型的会计记录包含总量较小的二进制数据，一般包括命令名、所使用的
+CPU 时间总量、用户 ID 和组 ID、启动时间等。会计记录结构大致定义如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">typedef</span> <span class="n">u_short</span> <span class="kt">comp_t</span><span class="p">;</span>  <span class="cm">/* 3-bit base 8 exponent; 13-bit fraction */</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">acct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">char</span>   <span class="n">ac_flag</span><span class="p">;</span>     <span class="cm">/* flag */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">char</span>   <span class="n">ac_stat</span><span class="p">;</span>     <span class="cm">/* termination status(signal &amp; core flag only) */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">uid_t</span>  <span class="n">ac_uid</span><span class="p">;</span>      <span class="cm">/* real user ID */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">gid_t</span>  <span class="n">ac_gid</span><span class="p">;</span>      <span class="cm">/* real group ID */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">dev_t</span>  <span class="n">ac_tty</span><span class="p">;</span>      <span class="cm">/* controlling terminal */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">time_t</span> <span class="n">ac_btime</span><span class="p">;</span>    <span class="cm">/* starting calendar time */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">comp_t</span> <span class="n">ac_utime</span><span class="p">;</span>    <span class="cm">/* user CPU time */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">comp_t</span> <span class="n">ac_stime</span><span class="p">;</span>    <span class="cm">/* system CPU time */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">comp_t</span> <span class="n">ac_etime</span><span class="p">;</span>    <span class="cm">/* elapsed time */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">comp_t</span> <span class="n">ac_mem</span><span class="p">;</span>      <span class="cm">/* average memory usage */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">comp_t</span> <span class="n">ac_io</span><span class="p">;</span>       <span class="cm">/* bytes transferred (by read and write) */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">comp_t</span> <span class="n">ac_rw</span><span class="p">;</span>       <span class="cm">/* blocks read or written */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">char</span>   <span class="n">ac_comm</span><span class="p">[</span><span class="mi">8</span><span class="p">];</span>  <span class="cm">/* command name */</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>会计记录所需的各个数据都由内核保存在进程表中，并在一个新进程创建时被初始化，在终止时写入会计记录。这将造成两个后果：</p>
+<ol>
+<li>我们不能获取永远不会停止的进程的会计记录。如 init 进程、内核守护进程。</li>
+<li>在会计记录文件中的顺序对应于进程终止顺序，而不是它们的启动顺序。</li>
+</ol>
+<p>会计记录对应于进程而不是程序。如果一个进程顺序执行了 3 个程序（A exec B、B exec
+C，最后是 C exit），只会写一个会计记录，在该记录中的命令名对应于程序 C，但 CPU
+时间是程序 A、B 和 C 之和。</p>
+<h3 id="十四用户标识">十四、用户标识</h3>
+<p>任何进程都可以得到其实际用户 ID 和有效用户 ID 及组
+ID，但是有时候希望可以等到运行该程序的登录名。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">char</span> <span class="o">*</span><span class="nf">getlogin</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="err">返回值：若成功，返回指向登录名字符串的指针；若出错，返回</span> <span class="nb">NULL</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="十五进程调度">十五、进程调度</h3>
+<p>UNIX
+系统历史上对进程提供的只是基于调度优先级的粗粒度的控制，调度策略和调度优先级是由内核确定的。进程可以通过调整友好值选择以更低优先级运行，只有特权进程允许提高调度权限。</p>
+<p>友好值和优先级的关系：友好值越高，优先级越低（越友好，调度优先级就越低）。</p>
+<p>进程可以通过 nice
+函数获取或更改它的友好值。使用这个函数，进程只能影响自己的友好值，不能影响其他进程的友好值。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">nice</span><span class="p">(</span><span class="kt">int</span> <span class="n">incr</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                        <span class="err">返回值：若成功，返回新的友好值</span> <span class="n">NZERO</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>如果 <em>incr</em> 超出合法值界限，系统会调整其至合法值界限。返回 -1，时，需要检查
+errno 以确定是否真的出错。</p>
+<p>getpriority 不仅可以获取进程的友好值，还可以获取一组相关进程的友好值：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/resource.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">getpriority</span><span class="p">(</span><span class="kt">int</span> <span class="n">which</span><span class="p">,</span> <span class="kt">id_t</span> <span class="n">who</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="err">返回值：若成功，返回</span> <span class="o">-</span><span class="n">NZERO</span> <span class="o">~</span> <span class="n">NZERO</span> <span class="o">-</span> <span class="mi">1</span> <span class="err">之间的友好值；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><em>which</em> 参数可以是下面三个值之一：PRIO*PROCESS 表示进程，PRIO_PGRP
+表示进程组，PRIO_USER 表示用户 ID。如果 <code>which</code>
+作用于多个进程，则返回所用作用进程中优先级最高的，即友好值最小的。</p>
+<p>setpriority 函数可用于设置优先级：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/resource.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">setpriority</span><span class="p">(</span><span class="kt">int</span> <span class="n">which</span><span class="p">,</span> <span class="kt">id_t</span> <span class="n">who</span><span class="p">,</span> <span class="kt">int</span> <span class="n">value</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                                        <span class="err">返回值：若成功，返回</span> <span class="mi">0</span><span class="err">；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="十六进程时间">十六、进程时间</h3>
+<p>times 函数可用于获取墙上时钟时间、用户 CPU 时间和系统 CPU 时间：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;sys/times.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">clock_t</span> <span class="nf">times</span><span class="p">(</span><span class="k">struct</span> <span class="n">tms</span> <span class="o">*</span><span class="n">buf</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="err">返回值：若成功，返回流逝的墙上时钟时间（以时钟滴答数为单位）；若出错，返回</span> <span class="o">-</span><span class="mi">1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>tms 结构具体如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">struct</span> <span class="n">tms</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">clock_t</span> <span class="n">tms_utime</span>    <span class="cm">/* user CPU time */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">clock_t</span> <span class="n">tms_stime</span>    <span class="cm">/* system CPU time */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">clock_t</span> <span class="n">tms_cutime</span>   <span class="cm">/* user CPU time, terminated children */</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">clock_t</span> <span class="n">tms_cstime</span>   <span class="cm">/* system CPU time, terminated children */</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>注意：此结构并没有包含墙上时钟时间，times
+函数返回墙上时钟时间作为其函数值。此值是相对于过去的某一时刻度量的，所以不能用其绝对值而必须使用其相对值。两个时间调用两次 times 函数，时间差就是墙上时钟时间。</p>
+</blockquote>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">Related content</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E8%BF%9B%E7%A8%8B%E7%8E%AF%E5%A2%83/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 进程环境"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">进程环境</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 系统数据文件和信息"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">系统数据文件和信息</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 标准 I/O 库"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">标准 I/O 库</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 文件和目录"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">文件和目录</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/%E6%96%87%E4%BB%B6-i/o/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E6%96%87%E4%BB%B6-i/o/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 文件 I/O"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">文件 I/O</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="jiennyx/jiennyx.github.io"
+        issue-term="pathname"
+        
+        label="Comment"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+        2023 imxiejie
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.16.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
