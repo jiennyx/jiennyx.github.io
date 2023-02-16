@@ -6,7 +6,365 @@
         <description>Recent content on imxiejie</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>en-us</language>
-        <lastBuildDate>Wed, 15 Feb 2023 13:35:27 +0800</lastBuildDate><atom:link href="https://www.imxiejie.me/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Thu, 16 Feb 2023 11:37:38 +0800</lastBuildDate><atom:link href="https://www.imxiejie.me/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>进程关系</title>
+        <link>https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/</link>
+        <pubDate>Thu, 16 Feb 2023 11:37:38 +0800</pubDate>
+        
+        <guid>https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/</guid>
+        <description>&lt;img src="https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/unix-book.jpeg" alt="Featured image of post 进程关系" /&gt;&lt;h3 id=&#34;一终端登录&#34;&gt;一、终端登录&lt;/h3&gt;
+&lt;p&gt;在早期的 UNIX 系统中，用户用 &lt;strong&gt;哑终端&lt;/strong&gt;
+进行登录，即用硬连接链接到主机。终端可以是本地的（直接连接）也可以是远程的（通过调制解调器连接）。在这两种情况下，登录都经由内核内的终端设备驱动程序。因为连接到主机上的终端设备数是固定的，所以同时的登录数也就有了上限。&lt;/p&gt;
+&lt;h4 id=&#34;以-bsd-终端登录为例&#34;&gt;以 BSD 终端登录为例&lt;/h4&gt;
+&lt;p&gt;系统管理者创建名通常为 &lt;code&gt;/etc/ttys&lt;/code&gt;
+的文件，其中，每个终端设备都有一行，每一行说明设备名和传到 getty
+程序的参数。当系统自举时，内核创建进程 ID 为 1 的进程，也就是 init 进程，init
+进程使系统进入多用户模式。init 进程读取 &lt;code&gt;/etc/ttys&lt;/code&gt;
+文件，对每个允许登录的终端设备，init 进程调用一次 fork，它所生成的子进程则 exec
+getty 程序。&lt;/p&gt;
+&lt;p&gt;如下图 9-1 所示，其中所有进程的实际用户 ID 和有效用户 ID 都是
+0，即它们都具有超级用户权限，init 以空环境 exec getty 程序。getty 对终端设备调用
+open 函数，以读、写方式将终端打开。一旦设备被打开，则文件描述符 0、1、2
+就被设备到该设备，随后 getty 输出 &lt;code&gt;&amp;quot;login: &amp;quot;&lt;/code&gt;
+之类的信息，当用户输入了用户名后，getty 的工作就完成了，随后它开始调用 login
+程序。
+&lt;img src=&#34;https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/c9-1-2.png&#34;
+	width=&#34;2162&#34;
+	height=&#34;932&#34;
+	srcset=&#34;https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/c9-1-2_hu2a1c293c4087c075e86b645bd4c282e7_222665_480x0_resize_box_3.png 480w, https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/c9-1-2_hu2a1c293c4087c075e86b645bd4c282e7_222665_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;231&#34;
+		data-flex-basis=&#34;556px&#34;
+	
+&gt;
+如上图 9-2 所示，login 得到了用户名后，能够调用 getpawnam
+获取相应用户的口令文件登录项，然后调用 getpass 以显示提示 &lt;code&gt;&amp;quot;Password: &amp;quot;&lt;/code&gt;，在用户输入完口令后，它调用 crypt
+将用户输入的口令加密，并与该用户在阴影口令文件中的登录项 pw_passwd
+进行比较。如果用户几次输入的口令无都无效，则 login 以参数 1 调用 exit
+表示登录过程失败。父进程即 init 进程了解到子进程的终止情况后，将再次调用 fork
+，其后又执行 getty，对此终端重复上述过程。&lt;/p&gt;
+&lt;p&gt;如果用户正确登录，login 将完成以下工作：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;将当前工作目录修改为该用户的起始目录。&lt;/li&gt;
+&lt;li&gt;调用 chown 修改该终端的所有权，使登录用户成为它的所有者。&lt;/li&gt;
+&lt;li&gt;将对该终端设备的访问权限修改为 用户都和写。&lt;/li&gt;
+&lt;li&gt;调用 setgid 及 initgroups 设置进程的组 ID。&lt;/li&gt;
+&lt;li&gt;用 login
+得到的所哟欧信息初始化环境：起始目录、shell、用户名以及一个系统默认路径（PATH）。&lt;/li&gt;
+&lt;li&gt;login 进程更改为登录用户的用户 ID 并调用该用户的登录 shell。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;当然，login 所做的事情要比上面说的还要多，至此，登录用户的登录 shell
+开始运行，其父进程是 init 进程。所以当 shell 终止时，init
+会得到通知，它会对该终端重复上述全部过程，登录 shell 的文件描述符 0、1、2
+设置为终端设备。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/c9-3.png&#34;
+	width=&#34;702&#34;
+	height=&#34;748&#34;
+	srcset=&#34;https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/c9-3_hu627ee99f12bda2c7767a3e9227f83e6c_66145_480x0_resize_box_3.png 480w, https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/c9-3_hu627ee99f12bda2c7767a3e9227f83e6c_66145_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;93&#34;
+		data-flex-basis=&#34;225px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;至此，shell 将读取启动文件，根据 shell 不同，启动文件也不同。如
+&lt;code&gt;.bash_profile&lt;/code&gt; 等。当执行完启动文件后，用户最后得到 shell
+提示符，并能输入命令。&lt;/p&gt;
+&lt;h3 id=&#34;二网络登录&#34;&gt;二、网络登录&lt;/h3&gt;
+&lt;p&gt;通过串行终端登录和通过网络登录两者之间的主要（物理上）的区别是：网络登录时，在终端和计算机之间的连接不再是点到点的。在网络登录的情况下，
+login 仅仅是一种可用的服务，这与其他网络服务得性质相同。&lt;/p&gt;
+&lt;p&gt;在终端登录中，init 知道有哪些终端设备可用来进行登录，并且为每个设备都生成了一个
+getty
+进程。但是，在网络登录情况下，所有登录都经由内核的网络接口驱动程序，而且事先并不知道有多少这样的登录。因此必须等待一个网络连接请求的到达，而不是使一个进程等待每一个可能的登录。&lt;/p&gt;
+&lt;p&gt;为了使同一个软件既能处理终端登录，又能处理网络登录，系统使用了一种称为 &lt;strong&gt;伪终端&lt;/strong&gt; 的软件驱动程序，它仿真串行终端的运行行为，并将终端操作映射为网络操作，反之亦然。&lt;/p&gt;
+&lt;h4 id=&#34;以-bsd-网络登录为例&#34;&gt;以 BSD 网络登录为例&lt;/h4&gt;
+&lt;p&gt;作为系统启动的一部分，init 调用一个 shell，使其执行 shell 脚本 &lt;code&gt;/etc/rc&lt;/code&gt;，由此
+shell 启动一个守护进程 inetd，它等待大多数网络连接。一旦此 shell 脚本终止，inetd
+父进程就变成 init。inetd 等待 TCP/IP 连接，当请求到达时，它执行一次
+fork，然后生成的子进程 exec 适当的程序。&lt;/p&gt;
+&lt;p&gt;假定一个对于 TELNET 服务进程的 TCP 连接请求到达，如下图所示：
+&lt;img src=&#34;https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/c9-4.png&#34;
+	width=&#34;1674&#34;
+	height=&#34;816&#34;
+	srcset=&#34;https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/c9-4_hu43a6a559cfcea6288a0d364222df3036_127443_480x0_resize_box_3.png 480w, https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/c9-4_hu43a6a559cfcea6288a0d364222df3036_127443_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;205&#34;
+		data-flex-basis=&#34;492px&#34;
+	
+&gt;
+然后，telentd 进程打开一个伪终端设备，并用 fork
+分成两个进程。父进程处理通过网络连接的通信，子进程执行 login
+程序。父进程和子进程通过伪终端相连接。在调用 exec 之前，子进程使其文件描述符
+0、1、2 与伪终端相连接。login 执行与终端登录时相同。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;注意：当通过终端或网络登录时，我们得到一个登录
+shell，其标准输入、标准输出和标准错误要么连接到一个终端设备，要么连接到一个伪终端设备上。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;三进程组&#34;&gt;三、进程组&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;进程组&lt;/strong&gt; 是一个或多个进程的集合，一个进程除了有一个进程 ID
+外，还属于一个进程组。通常，它们是在同一作业中结合起来的，同一进程组中的进程接收来自同一终端的各种信号。每个进程组都有唯一的进程组
+ID，进程组 ID 类似于进程 ID，它是一个正整数。&lt;/p&gt;
+&lt;p&gt;下列函数可用于返回进程的进程组 ID：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;unistd.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;pid_t&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;getpgrp&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                                                    &lt;span class=&#34;err&#34;&gt;返回值：调用进程的进程组&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ID&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;pid_t&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;getpgid&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;pid_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;pid&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                                &lt;span class=&#34;err&#34;&gt;返回值：若成功，返回进程组&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ID&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;；若出错，返回&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;在 getpgid 种，若 &lt;em&gt;pid&lt;/em&gt; 为 0，则返回的是调用进程的进程组 ID，与 getpgrp 相同。&lt;/p&gt;
+&lt;p&gt;每个进程组都有一个组长进程，组长进程的进程组 ID 等于其进程
+ID。进程组组长可以创建一个进程组、创建该组中的进程，然后终止。只要在某个进程组中有一个进程存在，那么这个进程组就存在，与组长进程是否终止无关。从进程组常见开始到其中最后一个进程离开为止的时间区段叫做进程组的生命期。最后一个进程可以终止，也可以转移到其他进程组。&lt;/p&gt;
+&lt;p&gt;下面函数用于创建一个进程组或加入一个进程组：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;#include &amp;lt;unistd.h&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;int setpgid(pid_t pid, pid_t pgid);
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                                        返回值：若成功，返回 0；若出错，返回 -1
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;setpgid 将 &lt;em&gt;pid&lt;/em&gt; 进程的进程组 ID 设置为 &lt;em&gt;pgid&lt;/em&gt;，如果这两个参数相等，则由 &lt;em&gt;pid&lt;/em&gt;
+指定的进程变成进程组组长。如果 &lt;em&gt;pid&lt;/em&gt; 是 0，则使用调用者的进程 ID。如果 &lt;em&gt;pgid&lt;/em&gt;
+是 0，则由 &lt;em&gt;pid&lt;/em&gt; 指定的进程 ID 用作进程组 ID。&lt;/p&gt;
+&lt;p&gt;一个进程只能为它自己或它的子进程设置进程组 ID，在它的子进程调用 exec
+后，它就不再更改该子进程的进程组 ID。&lt;/p&gt;
+&lt;p&gt;在大多数作业控制 shell 中，在 fork 之后调用此函数，使父进程设置其子进程的进程组
+ID，并且也使子进程设置其自己的进程组
+ID。这两个调用有一个是冗余的，但让父子进程都这样做可以保证，在父进程和子进程认为子进程已经进入该进程组之前，这确实已经发生了。如果不这样做，在
+fork
+之后，由于父进程和子进程运行的先后次序不确定，会因为子进程的组员身份取决于哪个进程首先执行而产生竞争条件。&lt;/p&gt;
+&lt;h3 id=&#34;四会话&#34;&gt;四、会话&lt;/h3&gt;
+&lt;p&gt;会话是一个或多个进程组的集合，如下图所示：
+&lt;img src=&#34;https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/c9-6.png&#34;
+	width=&#34;1708&#34;
+	height=&#34;634&#34;
+	srcset=&#34;https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/c9-6_hufa4ac9f8fb41b5091cb676da6e166402_86315_480x0_resize_box_3.png 480w, https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/c9-6_hufa4ac9f8fb41b5091cb676da6e166402_86315_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;269&#34;
+		data-flex-basis=&#34;646px&#34;
+	
+&gt;
+通常是由 shell 的管道将几个进程编成一组。上图可能得命令为：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;proc1 &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; proc2 &lt;span class=&#34;p&#34;&gt;&amp;amp;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;proc3 &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; proc4 &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; proc5
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;下面的函数可以用于创建一个会话：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;unistd.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;pid_t&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;setsid&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                                &lt;span class=&#34;err&#34;&gt;返回值：若成功，返回进程组&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ID&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;；若出错，返回&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;如果调用此函数的不是一个进程组的组长，那么此函数会创建一个新会话。具体会发生以下
+3 件事：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;该进程变成会话首进程，此时，该进程是新会话的唯一进程。&lt;/li&gt;
+&lt;li&gt;该进程变成一个新进程组的组长进程，新进程组 ID 是该调用进程的进程 ID。&lt;/li&gt;
+&lt;li&gt;该进程没有控制终端，如果在调用 setsid
+前有一个控制终端，那么该联系也会被切断。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;下面函数用用于获取会话首进程的进程组 ID，即会话 ID：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;unistd.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;pid_t&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;getsid&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;pid_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;pid&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                    &lt;span class=&#34;err&#34;&gt;返回值：若成功，返回会话首进程的进程组&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ID&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;；若出错，返回&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;如果 &lt;em&gt;pid&lt;/em&gt; 是 0，getsid 返回调用进程的会话首进程的进程组
+ID。出去安全性考虑，如果 &lt;em&gt;pid&lt;/em&gt;
+不属于调用者所在的会话，那么将无法获得该会话首进程的进程组 ID。&lt;/p&gt;
+&lt;h3 id=&#34;五控制终端&#34;&gt;五、控制终端&lt;/h3&gt;
+&lt;p&gt;会话和进程组还有一些其他特性：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;一个会话可以用一个 &lt;strong&gt;控制终端&lt;/strong&gt;。通常是终端设备或伪终端设备。&lt;/li&gt;
+&lt;li&gt;建立与控制终端连接的会话首进程叫做 &lt;strong&gt;控制进程&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;一个会话中的几个进程可以被分为一个 &lt;strong&gt;前台进程组&lt;/strong&gt; 和一个或多个
+&lt;strong&gt;后台进程组&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;如果一个会话有一个控制终端，则它有一个前台进程组，其余进程组为后台进程组。&lt;/li&gt;
+&lt;li&gt;无论何时键入终端的中断键（即 Ctrl
+&lt;ul&gt;
+&lt;li&gt;C），都会将中断信号发送给前台进程组的所有进程。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;无论何时键入终端的退出键（即 Ctrl
+&lt;ul&gt;
+&lt;li&gt;\），都会将退出信号发送给前台进程组的所有进程。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;如果终端接口检测到调制解调器（或网络）已经断开连接，则将挂断信号发送至控制进程（即会话首进程）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这些特性如下图所示：
+&lt;img src=&#34;https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/c9-7.png&#34;
+	width=&#34;1846&#34;
+	height=&#34;954&#34;
+	srcset=&#34;https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/c9-7_huf8899eb48acde354e28f1c6965e7c1b8_166684_480x0_resize_box_3.png 480w, https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/c9-7_huf8899eb48acde354e28f1c6965e7c1b8_166684_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;193&#34;
+		data-flex-basis=&#34;464px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;六函数-tcgetpgrptcsetgprp-和-tcgetsid&#34;&gt;六、函数 tcgetpgrp、tcsetgprp 和 tcgetsid&lt;/h3&gt;
+&lt;p&gt;需要有一种方法来通知内核哪一个进程组是前台进程组，这样终端设备程序就能知道讲终端输入和终端产生的信号发送至何处。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;unistd.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;pid_t&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;tcgetpgrp&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fd&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                            &lt;span class=&#34;err&#34;&gt;返回值：若成功，返回前台进程组&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ID&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;；若出错，返回&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;tcsetgprp&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fd&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;pid_t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;pgrpid&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                                        &lt;span class=&#34;err&#34;&gt;返回值：若成功，返回&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;；若出错，返回&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;函数 tcgetpgrp 返回前台进程组 ID，它与在 &lt;em&gt;fd&lt;/em&gt; 上打开的终端相连接。&lt;br&gt;
+如果进程有一个控制终端，则该进程可以调用 tcsetpgrp 将前台进程组 ID 设置为 &lt;em&gt;pgrpid&lt;/em&gt;，&lt;em&gt;pgrpid&lt;/em&gt; 应当是在同一会话中的进程进程组 ID，&lt;em&gt;fd&lt;/em&gt; 必须引用该会话的控制终端。&lt;/p&gt;
+&lt;p&gt;下面的函数可用于获取会话首进程的进程组 ID：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#include&lt;/span&gt; &lt;span class=&#34;cpf&#34;&gt;&amp;lt;termios.h&amp;gt;&lt;/span&gt;&lt;span class=&#34;cp&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;pid_t&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;tcgetsid&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fd&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                    &lt;span class=&#34;err&#34;&gt;返回值：若成功，返回会话首进程的进程组&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ID&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;；若出错，返回&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;七作业控制&#34;&gt;七、作业控制&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;作业&lt;/strong&gt;：一个作业只是几个进程的集合，通常是一个进程管道。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;作业控制&lt;/strong&gt;
+允许在一个终端上启动多个作业（进程组），它控制哪一个作业可以访问该终端以及哪些作业在后台运行：作业控制要求以下
+3 种形式的支持：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;支持作业控制的 shell。&lt;/li&gt;
+&lt;li&gt;内核中的终端驱动程序必须支持作业控制。&lt;/li&gt;
+&lt;li&gt;内核必须提供对某种作业控制信号的支持。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;只有前台作业接收终端输入。如果后台作业试图读终端，这并不是一个错误，但是终端驱动程序将检测到这种情况，并且向后台作业发送一个特定的信号
+SIGTTIN。该信号通常会停止此后台作业，而 shell
+则向有关用户发出这种情况的通知，然后用户就可用 shell
+命令将此作业转为前台作业运行，于是它就可以读终端。&lt;/p&gt;
+&lt;p&gt;具体情况如下：
+&lt;img src=&#34;https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/c9-9.png&#34;
+	width=&#34;1758&#34;
+	height=&#34;1618&#34;
+	srcset=&#34;https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/c9-9_hubff67932c5396f2647769012d94be243_302354_480x0_resize_box_3.png 480w, https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/c9-9_hubff67932c5396f2647769012d94be243_302354_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;108&#34;
+		data-flex-basis=&#34;260px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;八shell-执行程序&#34;&gt;八、shell 执行程序&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;无作业控制时&lt;/strong&gt;，shell fork 一个它自身的副本，然后此副本再为管道中的每条命令 fork
+一个进程。&lt;strong&gt;管道中的最后一个进程是 shell
+的子进程，而执行管道中的其他命令是该最后进程的子进程&lt;/strong&gt;。
+具体情况如下图所示：
+&lt;img src=&#34;https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/c9-10.png&#34;
+	width=&#34;1542&#34;
+	height=&#34;702&#34;
+	srcset=&#34;https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/c9-10_hu7d492e87acbe88feb750e4edda86a01f_111713_480x0_resize_box_3.png 480w, https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/c9-10_hu7d492e87acbe88feb750e4edda86a01f_111713_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;219&#34;
+		data-flex-basis=&#34;527px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;注意：使用的 shell 不同，创建各个进程的顺序也可能不同。&lt;/p&gt;
+&lt;/blockquote&gt;
+</description>
+        </item>
+        <item>
         <title>进程控制</title>
         <link>https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/</link>
         <pubDate>Wed, 15 Feb 2023 13:35:27 +0800</pubDate>
