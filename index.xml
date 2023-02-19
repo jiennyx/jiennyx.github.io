@@ -6,7 +6,59 @@
         <description>Recent content on imxiejie</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>en-us</language>
-        <lastBuildDate>Thu, 16 Feb 2023 11:37:38 +0800</lastBuildDate><atom:link href="https://www.imxiejie.me/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Sun, 19 Feb 2023 15:29:38 +0800</lastBuildDate><atom:link href="https://www.imxiejie.me/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>信号</title>
+        <link>https://www.imxiejie.me/p/%E4%BF%A1%E5%8F%B7/</link>
+        <pubDate>Sun, 19 Feb 2023 15:29:38 +0800</pubDate>
+        
+        <guid>https://www.imxiejie.me/p/%E4%BF%A1%E5%8F%B7/</guid>
+        <description>&lt;img src="https://www.imxiejie.me/p/%E4%BF%A1%E5%8F%B7/unix-book.jpeg" alt="Featured image of post 信号" /&gt;&lt;h3 id=&#34;一什么是信号&#34;&gt;一、什么是信号？&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;信号&lt;/strong&gt;
+是软件中断，信号提供了一种处理异步事件的方法。每个信号都有一个名字，而且都是以
+3 个字符 &lt;code&gt;SIG&lt;/code&gt; 开头，比如 SIGCHLD、SIGQUIT
+等等。每个名字都会对应一个正整形编号，即不存在编号为 0 的信号，编号为
+0 的信号也被称为 &lt;strong&gt;空信号&lt;/strong&gt;。&lt;/p&gt;
+&lt;h3 id=&#34;二如何产生信号&#34;&gt;二、如何产生信号？&lt;/h3&gt;
+&lt;p&gt;有很多方式可以产生信号，比如：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;最常见的应该是当我们在终端按下 Ctrl+C 时，该信号可以终止当前前台的进程。&lt;/li&gt;
+&lt;li&gt;硬件异常产生信号，比如除数为 0，引用了无效内存等。&lt;/li&gt;
+&lt;li&gt;平时使用 kill 命令向后台进程传递信号，比如常用 kill 命令终止后台进程。&lt;/li&gt;
+&lt;li&gt;当检测到某种软件条件已经发生，并应将其通知有关进程时也产生信号。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;当一个信号产生时，内核通常在进程表中以某种形式设置一个标志，当对信号采取了这种动作时，我们就说向进程 &lt;strong&gt;递送&lt;/strong&gt; 了一个信号。而在信号产生和递送之间，我们称信号是 &lt;strong&gt;未决&lt;/strong&gt; 的。&lt;/p&gt;
+&lt;h3 id=&#34;三信号的处理&#34;&gt;三、信号的处理&lt;/h3&gt;
+&lt;p&gt;信号是一个异步事件，对于进程来说是随机出现的，所以进程不能简单判断某个变量是否改变来当做发生了信号的依据，而是要告诉内核
+“在信号发生时，执行什么操作”。&lt;/p&gt;
+&lt;p&gt;一般而言，在信号发生时，可以告诉内核按下列 3 种方式处理：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;忽略信号&lt;/strong&gt;。大多数信号都可以按照此方式进行处理，但是有两种信号不行，它们是
+SIGKILL
+和 SIGSTOP。至于原因，是因为它们向内核和超级用户提供了终止进程的可靠方法。另外，如果忽略某些硬件产生的信号，那么结果将是未定义的。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;捕捉信号&lt;/strong&gt;。捕捉信号即在信号发生时，按照用户定义的函数进行处理，这种函数也叫做
+&lt;strong&gt;信号处理函数&lt;/strong&gt;。但不能捕捉 SIGKILL 和 SIGSTOP 信号。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;按照系统默认动作执行&lt;/strong&gt;。对于每一种信号，系统都有一个默认动作，但大多数的默认动作都是终止进程。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;进程可以选用
+“阻塞信号递送”，如果为进程产生了一个阻塞的信号，而且对该信号的处理是捕捉信号或者是按默认动作执行，那么该信号将会保持未决状态，直到该进程解除了对该信号的阻塞或者将处理动作修改为忽略信号。从这里可以看出，内核在递送一个原来被阻塞的信号给进程时，才决定对它的处理方式，在信号到达之前，进程仍然可以修改对它的处理方式。&lt;/p&gt;
+&lt;p&gt;如果在阻塞期间，内核向进程传递了某种信号多次，那么我们称这些信号进行了
+&lt;strong&gt;排队&lt;/strong&gt;。除非支持 POSIX.1 实时扩展，否则大多数 UNIX
+都不进行排队，而是只递送该信号一次。&lt;/p&gt;
+&lt;h3 id=&#34;四信号集&#34;&gt;四、信号集&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;信号集&lt;/strong&gt; ，或者称 &lt;strong&gt;信号屏蔽字&lt;/strong&gt;，
+拥有自己的数据类型，信号的编号大多数情况下都会超过一个整形所包含的位数，所以不能使用整形来表示信号集。信号集的目的是告诉内核不能发生在该信号集中的信号，跟直观相反，信号集是一种被屏蔽信号的集合，不是所允许的信号的集合。&lt;/p&gt;
+&lt;h3 id=&#34;五可重入函数&#34;&gt;五、可重入函数&lt;/h3&gt;
+&lt;p&gt;一个 &lt;strong&gt;可重入函数&lt;/strong&gt; 简单来说就是一个可以被中断的函数，在这个函数执行期间的任意时刻中断它，转而执行其他代码段，在返回时不会出现什么错误。&lt;/p&gt;
+&lt;p&gt;而不可重入函数通常具有以下特点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;使用了静态数据结构。&lt;/li&gt;
+&lt;li&gt;调用了 malloc 或 free。&lt;/li&gt;
+&lt;li&gt;是标准 I/O 函数。标准 I/O
+函数的很多实现都以不可重入的方式使用全局数据结构。&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        </item>
+        <item>
         <title>进程关系</title>
         <link>https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/</link>
         <pubDate>Thu, 16 Feb 2023 11:37:38 +0800</pubDate>

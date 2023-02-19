@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='一、什么是信号？ 信号 是软件中断，信号提供了一种处理异步事件的方法。每个信号都有一个名字，而且都是以 3 个字符 SIG 开头，比如 SIGCHLD、SIGQUIT 等等。每个名字都会对应一个正整形编号，即不存在编号为 0 的信号，编号为 0 的信号也被称为 空信号。
+二、如何产生信号？ 有很多方式可以产生信号，比如：
+最常见的应该是当我们在终端按下 Ctrl&#43;C 时，该信号可以终止当前前台的进程。 硬件异常产生信号，比如除数为 0，引用了无效内存等。 平时使用 kill 命令向后台进程传递信号，比如常用 kill 命令终止后台进程。 当检测到某种软件条件已经发生，并应将其通知有关进程时也产生信号。 当一个信号产生时，内核通常在进程表中以某种形式设置一个标志，当对信号采取了这种动作时，我们就说向进程 递送 了一个信号。而在信号产生和递送之间，我们称信号是 未决 的。
+三、信号的处理 信号是一个异步事件，对于进程来说是随机出现的，所以进程不能简单判断某个变量是否改变来当做发生了信号的依据，而是要告诉内核 “在信号发生时，执行什么操作”。
+一般而言，在信号发生时，可以告诉内核按下列 3 种方式处理：
+忽略信号。大多数信号都可以按照此方式进行处理，但是有两种信号不行，它们是 SIGKILL 和 SIGSTOP。至于原因，是因为它们向内核和超级用户提供了终止进程的可靠方法。另外，如果忽略某些硬件产生的信号，那么结果将是未定义的。 捕捉信号。捕捉信号即在信号发生时，按照用户定义的函数进行处理，这种函数也叫做 信号处理函数。但不能捕捉 SIGKILL 和 SIGSTOP 信号。 按照系统默认动作执行。对于每一种信号，系统都有一个默认动作，但大多数的默认动作都是终止进程。 进程可以选用 “阻塞信号递送”，如果为进程产生了一个阻塞的信号，而且对该信号的处理是捕捉信号或者是按默认动作执行，那么该信号将会保持未决状态，直到该进程解除了对该信号的阻塞或者将处理动作修改为忽略信号。从这里可以看出，内核在递送一个原来被阻塞的信号给进程时，才决定对它的处理方式，在信号到达之前，进程仍然可以修改对它的处理方式。
+如果在阻塞期间，内核向进程传递了某种信号多次，那么我们称这些信号进行了 排队。除非支持 POSIX.1 实时扩展，否则大多数 UNIX 都不进行排队，而是只递送该信号一次。
+四、信号集 信号集 ，或者称 信号屏蔽字， 拥有自己的数据类型，信号的编号大多数情况下都会超过一个整形所包含的位数，所以不能使用整形来表示信号集。信号集的目的是告诉内核不能发生在该信号集中的信号，跟直观相反，信号集是一种被屏蔽信号的集合，不是所允许的信号的集合。
+五、可重入函数 一个 可重入函数 简单来说就是一个可以被中断的函数，在这个函数执行期间的任意时刻中断它，转而执行其他代码段，在返回时不会出现什么错误。
+而不可重入函数通常具有以下特点：
+使用了静态数据结构。 调用了 malloc 或 free。 是标准 I/O 函数。标准 I/O 函数的很多实现都以不可重入的方式使用全局数据结构。 '>
+<title>信号</title>
+
+<link rel='canonical' href='https://www.imxiejie.me/p/%E4%BF%A1%E5%8F%B7/'>
+
+<link rel="stylesheet" href="/scss/style.min.8191399262444ab68b72a18c97392f5349be20a1615d77445be51e974c144cff.css"><meta property='og:title' content='信号'>
+<meta property='og:description' content='一、什么是信号？ 信号 是软件中断，信号提供了一种处理异步事件的方法。每个信号都有一个名字，而且都是以 3 个字符 SIG 开头，比如 SIGCHLD、SIGQUIT 等等。每个名字都会对应一个正整形编号，即不存在编号为 0 的信号，编号为 0 的信号也被称为 空信号。
+二、如何产生信号？ 有很多方式可以产生信号，比如：
+最常见的应该是当我们在终端按下 Ctrl&#43;C 时，该信号可以终止当前前台的进程。 硬件异常产生信号，比如除数为 0，引用了无效内存等。 平时使用 kill 命令向后台进程传递信号，比如常用 kill 命令终止后台进程。 当检测到某种软件条件已经发生，并应将其通知有关进程时也产生信号。 当一个信号产生时，内核通常在进程表中以某种形式设置一个标志，当对信号采取了这种动作时，我们就说向进程 递送 了一个信号。而在信号产生和递送之间，我们称信号是 未决 的。
+三、信号的处理 信号是一个异步事件，对于进程来说是随机出现的，所以进程不能简单判断某个变量是否改变来当做发生了信号的依据，而是要告诉内核 “在信号发生时，执行什么操作”。
+一般而言，在信号发生时，可以告诉内核按下列 3 种方式处理：
+忽略信号。大多数信号都可以按照此方式进行处理，但是有两种信号不行，它们是 SIGKILL 和 SIGSTOP。至于原因，是因为它们向内核和超级用户提供了终止进程的可靠方法。另外，如果忽略某些硬件产生的信号，那么结果将是未定义的。 捕捉信号。捕捉信号即在信号发生时，按照用户定义的函数进行处理，这种函数也叫做 信号处理函数。但不能捕捉 SIGKILL 和 SIGSTOP 信号。 按照系统默认动作执行。对于每一种信号，系统都有一个默认动作，但大多数的默认动作都是终止进程。 进程可以选用 “阻塞信号递送”，如果为进程产生了一个阻塞的信号，而且对该信号的处理是捕捉信号或者是按默认动作执行，那么该信号将会保持未决状态，直到该进程解除了对该信号的阻塞或者将处理动作修改为忽略信号。从这里可以看出，内核在递送一个原来被阻塞的信号给进程时，才决定对它的处理方式，在信号到达之前，进程仍然可以修改对它的处理方式。
+如果在阻塞期间，内核向进程传递了某种信号多次，那么我们称这些信号进行了 排队。除非支持 POSIX.1 实时扩展，否则大多数 UNIX 都不进行排队，而是只递送该信号一次。
+四、信号集 信号集 ，或者称 信号屏蔽字， 拥有自己的数据类型，信号的编号大多数情况下都会超过一个整形所包含的位数，所以不能使用整形来表示信号集。信号集的目的是告诉内核不能发生在该信号集中的信号，跟直观相反，信号集是一种被屏蔽信号的集合，不是所允许的信号的集合。
+五、可重入函数 一个 可重入函数 简单来说就是一个可以被中断的函数，在这个函数执行期间的任意时刻中断它，转而执行其他代码段，在返回时不会出现什么错误。
+而不可重入函数通常具有以下特点：
+使用了静态数据结构。 调用了 malloc 或 free。 是标准 I/O 函数。标准 I/O 函数的很多实现都以不可重入的方式使用全局数据结构。 '>
+<meta property='og:url' content='https://www.imxiejie.me/p/%E4%BF%A1%E5%8F%B7/'>
+<meta property='og:site_name' content='imxiejie'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2023-02-19T15:29:38&#43;08:00'/><meta property='article:modified_time' content='2023-02-19T15:29:38&#43;08:00'/><meta property='og:image' content='https://www.imxiejie.me/p/%E4%BF%A1%E5%8F%B7/unix-book.jpeg' />
+<meta name="twitter:title" content="信号">
+<meta name="twitter:description" content="一、什么是信号？ 信号 是软件中断，信号提供了一种处理异步事件的方法。每个信号都有一个名字，而且都是以 3 个字符 SIG 开头，比如 SIGCHLD、SIGQUIT 等等。每个名字都会对应一个正整形编号，即不存在编号为 0 的信号，编号为 0 的信号也被称为 空信号。
+二、如何产生信号？ 有很多方式可以产生信号，比如：
+最常见的应该是当我们在终端按下 Ctrl&#43;C 时，该信号可以终止当前前台的进程。 硬件异常产生信号，比如除数为 0，引用了无效内存等。 平时使用 kill 命令向后台进程传递信号，比如常用 kill 命令终止后台进程。 当检测到某种软件条件已经发生，并应将其通知有关进程时也产生信号。 当一个信号产生时，内核通常在进程表中以某种形式设置一个标志，当对信号采取了这种动作时，我们就说向进程 递送 了一个信号。而在信号产生和递送之间，我们称信号是 未决 的。
+三、信号的处理 信号是一个异步事件，对于进程来说是随机出现的，所以进程不能简单判断某个变量是否改变来当做发生了信号的依据，而是要告诉内核 “在信号发生时，执行什么操作”。
+一般而言，在信号发生时，可以告诉内核按下列 3 种方式处理：
+忽略信号。大多数信号都可以按照此方式进行处理，但是有两种信号不行，它们是 SIGKILL 和 SIGSTOP。至于原因，是因为它们向内核和超级用户提供了终止进程的可靠方法。另外，如果忽略某些硬件产生的信号，那么结果将是未定义的。 捕捉信号。捕捉信号即在信号发生时，按照用户定义的函数进行处理，这种函数也叫做 信号处理函数。但不能捕捉 SIGKILL 和 SIGSTOP 信号。 按照系统默认动作执行。对于每一种信号，系统都有一个默认动作，但大多数的默认动作都是终止进程。 进程可以选用 “阻塞信号递送”，如果为进程产生了一个阻塞的信号，而且对该信号的处理是捕捉信号或者是按默认动作执行，那么该信号将会保持未决状态，直到该进程解除了对该信号的阻塞或者将处理动作修改为忽略信号。从这里可以看出，内核在递送一个原来被阻塞的信号给进程时，才决定对它的处理方式，在信号到达之前，进程仍然可以修改对它的处理方式。
+如果在阻塞期间，内核向进程传递了某种信号多次，那么我们称这些信号进行了 排队。除非支持 POSIX.1 实时扩展，否则大多数 UNIX 都不进行排队，而是只递送该信号一次。
+四、信号集 信号集 ，或者称 信号屏蔽字， 拥有自己的数据类型，信号的编号大多数情况下都会超过一个整形所包含的位数，所以不能使用整形来表示信号集。信号集的目的是告诉内核不能发生在该信号集中的信号，跟直观相反，信号集是一种被屏蔽信号的集合，不是所允许的信号的集合。
+五、可重入函数 一个 可重入函数 简单来说就是一个可以被中断的函数，在这个函数执行期间的任意时刻中断它，转而执行其他代码段，在返回时不会出现什么错误。
+而不可重入函数通常具有以下特点：
+使用了静态数据结构。 调用了 malloc 或 free。 是标准 I/O 函数。标准 I/O 函数的很多实现都以不可重入的方式使用全局数据结构。 "><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://www.imxiejie.me/p/%E4%BF%A1%E5%8F%B7/unix-book.jpeg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu87865fc6accf0c3d769e896d75694e81_162656_300x0_resize_q75_box.jpeg" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">imxiejie</a></h1>
+            <h2 class="site-description">Somebody has to win, so why not be me?</h2>
+        </div>
+    </header><ol class="social-menu">
+            
+                <li>
+                    <a 
+                        href='https://github.com/jiennyx'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>Dark Mode</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li>
+      <ol>
+        <li><a href="#一什么是信号">一、什么是信号？</a></li>
+        <li><a href="#二如何产生信号">二、如何产生信号？</a></li>
+        <li><a href="#三信号的处理">三、信号的处理</a></li>
+        <li><a href="#四信号集">四、信号集</a></li>
+        <li><a href="#五可重入函数">五、可重入函数</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/%E4%BF%A1%E5%8F%B7/">
+                <img src="/p/%E4%BF%A1%E5%8F%B7/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_800x0_resize_q75_box.jpeg"
+                        srcset="/p/%E4%BF%A1%E5%8F%B7/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_800x0_resize_q75_box.jpeg 800w, /p/%E4%BF%A1%E5%8F%B7/unix-book_hu4547a7503b7987387e6e836bc31e69b7_54147_1600x0_resize_q75_box.jpeg 1600w"
+                        width="800" 
+                        height="298" 
+                        loading="lazy"
+                        alt="Featured image of post 信号" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/unix-%E7%8E%AF%E5%A2%83%E9%AB%98%E7%BA%A7%E7%BC%96%E7%A8%8B/" >
+                UNIX 环境高级编程
+            </a>
+        
+            <a href="/categories/todo/" >
+                TODO
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E4%BF%A1%E5%8F%B7/">信号</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Feb 19, 2023</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    1 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h3 id="一什么是信号">一、什么是信号？</h3>
+<p><strong>信号</strong>
+是软件中断，信号提供了一种处理异步事件的方法。每个信号都有一个名字，而且都是以
+3 个字符 <code>SIG</code> 开头，比如 SIGCHLD、SIGQUIT
+等等。每个名字都会对应一个正整形编号，即不存在编号为 0 的信号，编号为
+0 的信号也被称为 <strong>空信号</strong>。</p>
+<h3 id="二如何产生信号">二、如何产生信号？</h3>
+<p>有很多方式可以产生信号，比如：</p>
+<ul>
+<li>最常见的应该是当我们在终端按下 Ctrl+C 时，该信号可以终止当前前台的进程。</li>
+<li>硬件异常产生信号，比如除数为 0，引用了无效内存等。</li>
+<li>平时使用 kill 命令向后台进程传递信号，比如常用 kill 命令终止后台进程。</li>
+<li>当检测到某种软件条件已经发生，并应将其通知有关进程时也产生信号。</li>
+</ul>
+<p>当一个信号产生时，内核通常在进程表中以某种形式设置一个标志，当对信号采取了这种动作时，我们就说向进程 <strong>递送</strong> 了一个信号。而在信号产生和递送之间，我们称信号是 <strong>未决</strong> 的。</p>
+<h3 id="三信号的处理">三、信号的处理</h3>
+<p>信号是一个异步事件，对于进程来说是随机出现的，所以进程不能简单判断某个变量是否改变来当做发生了信号的依据，而是要告诉内核
+“在信号发生时，执行什么操作”。</p>
+<p>一般而言，在信号发生时，可以告诉内核按下列 3 种方式处理：</p>
+<ol>
+<li><strong>忽略信号</strong>。大多数信号都可以按照此方式进行处理，但是有两种信号不行，它们是
+SIGKILL
+和 SIGSTOP。至于原因，是因为它们向内核和超级用户提供了终止进程的可靠方法。另外，如果忽略某些硬件产生的信号，那么结果将是未定义的。</li>
+<li><strong>捕捉信号</strong>。捕捉信号即在信号发生时，按照用户定义的函数进行处理，这种函数也叫做
+<strong>信号处理函数</strong>。但不能捕捉 SIGKILL 和 SIGSTOP 信号。</li>
+<li><strong>按照系统默认动作执行</strong>。对于每一种信号，系统都有一个默认动作，但大多数的默认动作都是终止进程。</li>
+</ol>
+<p>进程可以选用
+“阻塞信号递送”，如果为进程产生了一个阻塞的信号，而且对该信号的处理是捕捉信号或者是按默认动作执行，那么该信号将会保持未决状态，直到该进程解除了对该信号的阻塞或者将处理动作修改为忽略信号。从这里可以看出，内核在递送一个原来被阻塞的信号给进程时，才决定对它的处理方式，在信号到达之前，进程仍然可以修改对它的处理方式。</p>
+<p>如果在阻塞期间，内核向进程传递了某种信号多次，那么我们称这些信号进行了
+<strong>排队</strong>。除非支持 POSIX.1 实时扩展，否则大多数 UNIX
+都不进行排队，而是只递送该信号一次。</p>
+<h3 id="四信号集">四、信号集</h3>
+<p><strong>信号集</strong> ，或者称 <strong>信号屏蔽字</strong>，
+拥有自己的数据类型，信号的编号大多数情况下都会超过一个整形所包含的位数，所以不能使用整形来表示信号集。信号集的目的是告诉内核不能发生在该信号集中的信号，跟直观相反，信号集是一种被屏蔽信号的集合，不是所允许的信号的集合。</p>
+<h3 id="五可重入函数">五、可重入函数</h3>
+<p>一个 <strong>可重入函数</strong> 简单来说就是一个可以被中断的函数，在这个函数执行期间的任意时刻中断它，转而执行其他代码段，在返回时不会出现什么错误。</p>
+<p>而不可重入函数通常具有以下特点：</p>
+<ul>
+<li>使用了静态数据结构。</li>
+<li>调用了 malloc 或 free。</li>
+<li>是标准 I/O 函数。标准 I/O
+函数的很多实现都以不可重入的方式使用全局数据结构。</li>
+</ul>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">Related content</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 进程关系"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">进程关系</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 系统数据文件和信息"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">系统数据文件和信息</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 标准 I/O 库"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">标准 I/O 库</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 文件和目录"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">文件和目录</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/">
+        
+        
+            <div class="article-image">
+                <img src="/p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/unix-book.da91764f2a3ada0cab8b460d140583f4_hu4547a7503b7987387e6e836bc31e69b7_54147_250x150_fill_q75_box_smart1.jpeg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 进程控制"
+                        
+                        data-hash="md5-2pF2Tyo62gyri0YNFAWD9A==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">进程控制</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="jiennyx/jiennyx.github.io"
+        issue-term="pathname"
+        
+        label="Comment"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+        2023 imxiejie
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.16.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
