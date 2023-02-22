@@ -266,6 +266,13 @@ MVCC 只在 REPEATABLE READ 和 READ COMMITTED 两个隔离级别下工作。其
         <li><a href="#一mysql-架构">一、MySQL 架构</a></li>
         <li><a href="#二隔离级别">二、隔离级别</a></li>
         <li><a href="#三mvcc-多版本并发控制">三、MVCC （多版本并发控制）</a></li>
+        <li><a href="#四索引">四、索引</a>
+          <ol>
+            <li><a href="#索引类型">索引类型</a></li>
+            <li><a href="#聚簇索引和非聚簇索引">聚簇索引和非聚簇索引</a></li>
+            <li><a href="#覆盖索引">覆盖索引</a></li>
+          </ol>
+        </li>
       </ol>
     </li>
   </ol>
@@ -336,7 +343,7 @@ MVCC 只在 REPEATABLE READ 和 READ COMMITTED 两个隔离级别下工作。其
 
 
                 <time class="article-time--reading">
-                    1 minute read
+                    2 minute read
                 </time>
             </div>
         
@@ -423,6 +430,224 @@ InnoDB
 <p>MVCC 只在 REPEATABLE READ 和 READ COMMITTED
 两个隔离级别下工作。其他两个隔离级别都和 MVCC 不兼容，因为 READ UNCOMMITTED
 总是读取最新的行，而 SERIALIZABLE 会对所有读取到的行都加锁。</p>
+<h3 id="四索引">四、索引</h3>
+<p><strong>索引</strong>
+是一种数据结构，作用是快速找到所需要的记录。类似于书本，当我们想查看某个章节，最简单的办法就是在目录找到该章节的页码。</p>
+<p>索引在 MySQL
+中是在存储引擎层实现的，它可以包含一列或多列的值，列的顺序也非常重要，因为 MySQL
+只能使用最左前缀列。</p>
+<p>索引具有以下优点：</p>
+<ol>
+<li>索引减少了服务器需要扫描的数据量。</li>
+<li>索引可以帮助服务器避免排序和使用临时表。</li>
+<li>索引可以将随机 I/O 转化为顺序 I/O。</li>
+</ol>
+<h4 id="索引类型">索引类型</h4>
+<p>根据索引的实现不同，索引一般有以下几种类型：</p>
+<h5 id="b-tree-索引">B-Tree 索引</h5>
+<p>B-Tree 索引在很多存储引擎实现中是 B+Tree，根据 B+Tree
+树的实现，那么所有叶子节点到根的距离都相同，同时叶子节点都是按顺序相连接的。故很适合用来做范围查找。</p>
+<p>B-Tree 所适用的查找：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">User</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">name</span><span class="w"> </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="k">null</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">gender</span><span class="w"> </span><span class="n">enum</span><span class="p">(</span><span class="s1">&#39;m&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;f&#39;</span><span class="p">)</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="k">null</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">age</span><span class="w"> </span><span class="nb">int</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="k">null</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">country</span><span class="w"> </span><span class="nb">varchar</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="k">null</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">key</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">age</span><span class="p">,</span><span class="w"> </span><span class="n">gender</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">)</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>
+<p>全值匹配</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="n">country</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="k">User</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Tom&#39;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">gender</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;m&#39;</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>全值匹配即对索引中的所有列进行匹配。</p>
+</li>
+<li>
+<p>匹配最左前缀</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="n">country</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="k">User</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Tom&#39;</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>只匹配索引的第一列。</p>
+</li>
+<li>
+<p>匹配列前缀</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="n">country</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="k">User</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s1">&#39;To%&#39;</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>只匹配列的前缀部分。</p>
+</li>
+<li>
+<p>匹配范围值</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="n">country</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="k">User</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="s1">&#39;Tom&#39;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="s1">&#39;Mary&#39;</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>精确匹配某一列并范围匹配另一列</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="n">country</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="k">User</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Tom&#39;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>精确匹配索引第一列，范围匹配第二列。</p>
+</li>
+<li>
+<p>只访问索引（覆盖索引）</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">age</span><span class="p">,</span><span class="w"> </span><span class="n">gender</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="k">User</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Tom&#39;</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>索引数据中包含了所需要查询的数据。</p>
+</li>
+</ul>
+<p>从上面的例子不难看出，B-Tree 索引也有一些限制：</p>
+<ul>
+<li>索引必须按最左列开始查找，否则无法使用索引。</li>
+<li>不能跳过索引中的列。</li>
+<li>如果包含了某个列的范围查询，那么该列右边的列都无法使用索引查找。如果范围查询的条件有限，可以考虑修改为
+<code>IN</code> 等值查询等。</li>
+</ul>
+<h5 id="哈希索引">哈希索引</h5>
+<p><strong>哈希索引</strong> 基于哈希表实现，故只能支持精确匹配索引所有列的查找，无法支持范围查询。对于每一行数据，存储引擎对会对索引列计算一个哈希码。哈希索引会将哈希码跟指向行的指针存储在一起，如果有多行的哈希码相同，那么就会以链表形式存放。</p>
+<p>示例：</p>
+<p>假如存在 User 表以下数据</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>name</th>
+<th>age</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tom</td>
+<td>11</td>
+</tr>
+<tr>
+<td>Mary</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Jery</td>
+<td>30</td>
+</tr>
+<tr>
+<td>Tim</td>
+<td>40</td>
+</tr>
+</tbody>
+</table></div>
+<p>假设对 (name, age) 做哈希索引，计算哈希码</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">hash(&#39;Tom&#39;, 11) = 3232
+</span></span><span class="line"><span class="cl">hash(&#39;Mary&#39;, 20) = 3113
+</span></span><span class="line"><span class="cl">hash(&#39;Jery&#39;, 30) = 9990
+</span></span><span class="line"><span class="cl">hash(&#39;Tim&#39;, 40) = 3333
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>可得到以下哈希结构：</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>槽</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3113</td>
+<td>指向第 2 行指针</td>
+</tr>
+<tr>
+<td>3232</td>
+<td>指向第 1 行指针</td>
+</tr>
+<tr>
+<td>3333</td>
+<td>指向第 4 行指针</td>
+</tr>
+<tr>
+<td>9990</td>
+<td>指向第 3 行指针</td>
+</tr>
+</tbody>
+</table></div>
+<p>假设当前有如下一个查询：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="k">User</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Tim&#39;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">age</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">40</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>那么会首先计算哈希码，得到 3333，根据这个哈希码，可以快速找到对应的值为 指向第
+4 行的指针，最后比较第 4 行的 name 和 age 是否等于 &lsquo;Tim&rsquo; 和 40。</p>
+<p>根据以上的例子，可以得出以下几个限制：</p>
+<ul>
+<li>哈希索引只存储哈希值和行指针，并不存储数据。</li>
+<li>哈希索引是将所有索引列进行哈希计算的，无法只使用部分索引列。</li>
+<li>哈希索引不是按顺序存储的，无法进行排序等。</li>
+<li>哈希索引只能用于等值比较查询。</li>
+</ul>
+<h5 id="全文索引">全文索引</h5>
+<p>// TODO</p>
+<h4 id="聚簇索引和非聚簇索引">聚簇索引和非聚簇索引</h4>
+<p>聚簇索引不是一种索引类型，而是一种数据存储方式。在 InnoDB
+中，聚簇索引就是在同一个结构中保存了 B-Tree
+索引和数据行。一般来说，通过主键聚集数据。</p>
+<p>非聚簇索引，或者称
+二级索引，在叶子节点中不仅保存了索引，还保存了主键，故通过非聚簇索引查找数据时，获得主键，然后再通过主键到聚簇索引查找对应的行，这称为回表。</p>
+<h4 id="覆盖索引">覆盖索引</h4>
+<p><strong>覆盖索引</strong> 是指一个索引中包含了所需要查询的字段。</p>
 
 </section>
 

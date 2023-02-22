@@ -6,7 +6,50 @@
         <description>Recent content in UNIX 环境高级编程 on imxiejie</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>en-us</language>
-        <lastBuildDate>Sun, 19 Feb 2023 15:29:38 +0800</lastBuildDate><atom:link href="https://www.imxiejie.me/categories/unix-%E7%8E%AF%E5%A2%83%E9%AB%98%E7%BA%A7%E7%BC%96%E7%A8%8B/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Mon, 20 Feb 2023 12:01:14 +0800</lastBuildDate><atom:link href="https://www.imxiejie.me/categories/unix-%E7%8E%AF%E5%A2%83%E9%AB%98%E7%BA%A7%E7%BC%96%E7%A8%8B/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>线程</title>
+        <link>https://www.imxiejie.me/p/%E7%BA%BF%E7%A8%8B/</link>
+        <pubDate>Mon, 20 Feb 2023 12:01:14 +0800</pubDate>
+        
+        <guid>https://www.imxiejie.me/p/%E7%BA%BF%E7%A8%8B/</guid>
+        <description>&lt;img src="https://www.imxiejie.me/p/%E7%BA%BF%E7%A8%8B/unix-book.jpeg" alt="Featured image of post 线程" /&gt;&lt;h3 id=&#34;一线程&#34;&gt;一、线程&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;线程&lt;/strong&gt;
+是最小的执行单元，一个进程由一个或多个线程组成。一个进程内的所有信息对该进程内的所有线程都是共享的。&lt;/p&gt;
+&lt;p&gt;同进程一样，线程也有一个唯一标识 ID，但线程 ID 只在同一进程内才有意义，跟进程 ID
+不同的是，线程 ID 是由一个结构体来表示，所以在对线程 ID
+进行比较时，需要使用函数来比较。&lt;/p&gt;
+&lt;p&gt;在创建一个线程后，线程的运行顺序是不确定的，不能保证调用线程和新建线程的执行顺序。&lt;/p&gt;
+&lt;p&gt;如果一个进程内有任何一个线程调用了 exit、_exit 或 _Exit
+，那么整个进程就会终止。类似的是，如果一个信号的默认动作是终止进程，那么发送到线程的信号也会导致整个进程终止。&lt;/p&gt;
+&lt;p&gt;而单个线程可以在不终止整个进程的情况下有 3 种方式退出：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;线程从启动例程返回。&lt;/li&gt;
+&lt;li&gt;调用 pthread_exit。&lt;/li&gt;
+&lt;li&gt;线程被同一进程内的其他线程取消。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;线程同进程一样，都可以注册终止清理程序，调用顺序与注册顺序相反，因为清理程序记录在栈中。&lt;/p&gt;
+&lt;h4 id=&#34;什么是线程的-结合态可结合-和-分离态可分离&#34;&gt;什么是线程的 &lt;strong&gt;结合态（可结合）&lt;/strong&gt; 和 &lt;strong&gt;分离态（可分离）&lt;/strong&gt;？&lt;/h4&gt;
+&lt;p&gt;一个可结合的线程能够被其他线程回收资源或杀死，在被其他线程回收之前，它的存储器资源（如栈）是不释放的。相反，一个分离的线程不能够被其他线程回收或杀死，它的存储器资源在它终止时由系统自动释放。&lt;/p&gt;
+&lt;p&gt;一个线程的分离或结合状态决定了以什么样的方式来终止自己，默认情况下，线程是可结合态的，它的终止状态会一直保存直到对线程调用 pthread_join，如果线程已经被分离，自己运行结束了，那么久终止了，马上释放资源。&lt;/p&gt;
+&lt;p&gt;如果对线程的终止状态不感兴趣，则可以将线程设置为分离态。&lt;/p&gt;
+&lt;h3 id=&#34;二线程同步&#34;&gt;二、线程同步&lt;/h3&gt;
+&lt;p&gt;线程同步的前提是只有所有线程都遵循相同的数据访问规则。&lt;/p&gt;
+&lt;h4 id=&#34;互斥量&#34;&gt;互斥量&lt;/h4&gt;
+&lt;p&gt;互斥量本质上就是一把锁，在访问共享资源前对互斥量进行设置，即加锁。在访问完成后释放互斥量，即解锁。&lt;/p&gt;
+&lt;h4 id=&#34;读写锁&#34;&gt;读写锁&lt;/h4&gt;
+&lt;p&gt;互斥量只有两种状态，要么加锁状态，要么不加锁状态。而读写锁则有
+3 种状态，读模式加锁，写模式加锁和不加锁状态。只有一个线程可以占有写模式的读写锁，但是可以有多个线程同时占有读模式的读写锁。&lt;/p&gt;
+&lt;p&gt;当读写锁在写模式加锁状态时，所有试图对这个锁进行加锁的线程都会被阻塞。而在读模式下加锁状态时，所有试图加读锁的线程都可以得到访问权，而试图加写锁的线程只能等待所有线程释放它们的读锁。当处于读模式加锁状态时，写锁请求会阻塞随后的读锁请求。这样可以避免长期处于读模式，而写锁请求得不到满足。&lt;/p&gt;
+&lt;p&gt;读写锁适用于读次数远大于写的情况。&lt;/p&gt;
+&lt;h4 id=&#34;条件变量&#34;&gt;条件变量&lt;/h4&gt;
+&lt;p&gt;条件变量本质是一个全局变量，而条件本身是由互斥量保护的，线程在改变条件之前必须先锁住互斥量，其他线程在获得互斥量之前不会察觉到这种改变，因为互斥量必须在锁定以后才能计算条件。&lt;/p&gt;
+&lt;h4 id=&#34;自旋锁&#34;&gt;自旋锁&lt;/h4&gt;
+&lt;p&gt;自旋锁和互斥量类似，但是自旋锁并不使进程休眠而阻塞，而是在获取锁之前一直处于忙等状态。自旋锁可用于以下情况：锁被持有的时间短，而且不希望在线程调度上花费太多成本。&lt;/p&gt;
+&lt;h4 id=&#34;屏障&#34;&gt;屏障&lt;/h4&gt;
+&lt;p&gt;屏障是协调多个线程并行工作的同步机制，允许每个线程等待，直到所有的合作线程都到达某一点，然后从该点继续执行。&lt;/p&gt;
+</description>
+        </item>
+        <item>
         <title>信号</title>
         <link>https://www.imxiejie.me/p/%E4%BF%A1%E5%8F%B7/</link>
         <pubDate>Sun, 19 Feb 2023 15:29:38 +0800</pubDate>
