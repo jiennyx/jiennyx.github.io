@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Redis on imxiejie</title>
+        <link>https://www.imxiejie.me/categories/redis/</link>
+        <description>Recent content in Redis on imxiejie</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>en-us</language>
+        <lastBuildDate>Tue, 07 Mar 2023 17:55:38 +0800</lastBuildDate><atom:link href="https://www.imxiejie.me/categories/redis/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Redis 学习笔记</title>
+        <link>https://www.imxiejie.me/p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</link>
+        <pubDate>Tue, 07 Mar 2023 17:55:38 +0800</pubDate>
+        
+        <guid>https://www.imxiejie.me/p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</guid>
+        <description>&lt;h3 id=&#34;一redis-为什么快&#34;&gt;一、Redis 为什么快？&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;Redis 是内存数据库，所有的操作都在内存上完成，内存的访问速度本来就很快。&lt;/li&gt;
+&lt;li&gt;Redis 最终是对数据结构进行增删改查，得益于高效的数据结构。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;二redis-的键值对存储&#34;&gt;二、Redis 的键值对存储&lt;/h3&gt;
+&lt;p&gt;Redis
+通过一个全局哈希表来存储键值对，一个哈希表就是一个数组，哈希桶中存储的不是值本身，而是指向值的指针，故
+Redis 的多种数据类型都可以用 1 个 entry 来表示。
+&lt;img src=&#34;https://www.imxiejie.me/p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/redis1-1.webp&#34;
+	width=&#34;1773&#34;
+	height=&#34;875&#34;
+	srcset=&#34;https://www.imxiejie.me/p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/redis1-1_hue3c2c2e095accee6b5ade4f0d724f1ba_66618_480x0_resize_q75_h2_box_2.webp 480w, https://www.imxiejie.me/p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/redis1-1_hue3c2c2e095accee6b5ade4f0d724f1ba_66618_1024x0_resize_q75_h2_box_2.webp 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;202&#34;
+		data-flex-basis=&#34;486px&#34;
+	
+&gt;&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

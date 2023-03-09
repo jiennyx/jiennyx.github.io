@@ -9,7 +9,7 @@
 
 <link rel='canonical' href='https://www.imxiejie.me/p/%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%92%8C%E4%BF%A1%E6%81%AF/'>
 
-<link rel="stylesheet" href="/scss/style.min.8191399262444ab68b72a18c97392f5349be20a1615d77445be51e974c144cff.css"><meta property='og:title' content='系统数据文件和信息'>
+<link rel="stylesheet" href="/scss/style.min.90546427ecbd2d81195644e247faf6b81eebafbfbea54637562a06e03a04bbda.css"><meta property='og:title' content='系统数据文件和信息'>
 <meta property='og:description' content='一、口令文件 UNIX 系统口令文件包含了下图所示的各个字段： 口令文件通常是 /etc/passwd，是一个 ASCII 文件，每一行都包含上图中的字段，字段之间用 : 分隔。
 例如：
 1 2 3 4 root:x:0:0:root:/root:/bin/bash squid:x:23:23::/var/spool/squid:/dev/null nobody:x:65534:65534:Nobody:/home:/bin/sh sar:x:205:105:Stephen Rago:/home/sar:/bin/bash 上述大致格式为 用户名:加密口令:用户 ID:组 ID:注释:起始目录:登录 shell 通常有一个用户名为 root 的登录项，其用户 ID 是 0（超级用户）。 加密口令字段包含了一个占位符。 口令文件项中的某些字段可能为空。 shell 字段包含了一个可执行文件名，被用作该用户的登录 shell。而如 /dev/null 不是一个可执行文件，这是一个设备，目的是为了防止以用户 squid 的名义登录系统。 为了阻止一个特定用户登录系统，除了使用 /dev/null 外，可以有多种方式： /bin/false 以不成功（非 0）状态终止。 /bin/true 以成功（0）状态终止。 nologin 打印可定制的出错信息，然后以非 0 状态终止。 使用 nobody 用户名的一个目的是，使任何人都可以登录系统，但其用户 ID 和 组 ID 不提供任何特权。 提供 finger 命令的某些系统支持注释字段中的附加信息。 下列是两个获取口令文件项的函数：
@@ -673,6 +673,29 @@
     </footer>
 
 
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.15.6/dist/katex.min.css"integrity="sha256-J&#43;iAE0sgH8QSz9hpcDxXIftnj65JEZgNhGcgReTTK9s="crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.15.6/dist/katex.min.js"integrity="sha256-InsNdER1b2xUewP&#43;pKCUJpkhiqwHgqiPXDlIk7GzBu4="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.15.6/dist/contrib/auto-render.min.js"integrity="sha256-y39Mpg7V3D4lhBX4x6O0bUqTV4pSrfgwEfGKfxkOdgI="crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+        renderMathInElement(document.querySelector(`.article-content`), {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ]
+        });})
+</script>
     
 </article>
 

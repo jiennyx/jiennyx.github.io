@@ -10,7 +10,7 @@
 
 <link rel='canonical' href='https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/'>
 
-<link rel="stylesheet" href="/scss/style.min.8191399262444ab68b72a18c97392f5349be20a1615d77445be51e974c144cff.css"><meta property='og:title' content='进程控制'>
+<link rel="stylesheet" href="/scss/style.min.90546427ecbd2d81195644e247faf6b81eebafbfbea54637562a06e03a04bbda.css"><meta property='og:title' content='进程控制'>
 <meta property='og:description' content='一、进程标识 每个进程都有一个非负整形表示的唯一进程 ID，虽然进程 ID 是唯一的，但它是可复用的，在进程终止后，其进程 ID 就成为可用的 ID 候选者。但大多数 UNIX 系统都实现了延迟复用算法，使得新进程的进程 ID 不同于最近终止进程所使用的进程 ID，这防止了将新进程认为是使用了某个同一 ID 的已终止进程。
 系统中有些专用进程，比如：
 0 号进程。ID 为 0 的进程通常是调度进程，也被称作 交换进程。该进程是内核的一部分，它不执行磁盘上的程序，因此也被称为 系统进程。 1 号进程。ID 为 1 的进程通常是 init 进程，在自举结束过程时由内核调用。该进程的程序文件是 /sbin/init。该进程负责在自举内核后启动一个 UNIX 系统，init 进程通常读取与系统有关的初始化文件并将系统引导到一个状态（比如多用户）。init 进程绝不会终止，它是一个普通的用户进程，但是它以超级用户特权运行。 注意：根据系统的不同，具体专用进程的实现也不同。
@@ -1091,6 +1091,29 @@ errno 以确定是否真的出错。</p>
     </footer>
 
 
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.15.6/dist/katex.min.css"integrity="sha256-J&#43;iAE0sgH8QSz9hpcDxXIftnj65JEZgNhGcgReTTK9s="crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.15.6/dist/katex.min.js"integrity="sha256-InsNdER1b2xUewP&#43;pKCUJpkhiqwHgqiPXDlIk7GzBu4="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.15.6/dist/contrib/auto-render.min.js"integrity="sha256-y39Mpg7V3D4lhBX4x6O0bUqTV4pSrfgwEfGKfxkOdgI="crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+        renderMathInElement(document.querySelector(`.article-content`), {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ]
+        });})
+</script>
     
 </article>
 

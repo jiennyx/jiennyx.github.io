@@ -10,7 +10,7 @@
 
 <link rel='canonical' href='https://www.imxiejie.me/p/%E6%A0%87%E5%87%86-i/o-%E5%BA%93/'>
 
-<link rel="stylesheet" href="/scss/style.min.8191399262444ab68b72a18c97392f5349be20a1615d77445be51e974c144cff.css"><meta property='og:title' content='标准 I/O 库'>
+<link rel="stylesheet" href="/scss/style.min.90546427ecbd2d81195644e247faf6b81eebafbfbea54637562a06e03a04bbda.css"><meta property='og:title' content='标准 I/O 库'>
 <meta property='og:description' content='一、流和 FILE 对象 对于标准 I/O 库，它们的操作是围绕着 流 进行的。流是一种抽象的概念，是一种顺序读写数据的模式，它的特点是单向流动，类似于水管。当使用标准 I/O 库打开或创建一个文件，我们就已经使得一个流跟一个文件相关联。
 对于 ASCII 字符集，一个字符用一个字节表示。对于国际字符集，一个字符可以用多个字节表示。标准 I/O 文件流可用于单字节或多字节（“宽”）字符集。而 流的定向 则决定了一个流所读、写的字符是单字节还是多字节的。当一个流最初被创建时，它并没有定向，如果在一个未定向的流上使用一个单字节的 I/O 函数，那么该流的定向就会被设置为 字节定向 的，如果在一个未定向的流上使用一个多字节的 I/O 函数，那么该流的定向就会被设置为 宽定向 的。
 只有两个函数可以改变流的定向，分别是 fwide 和 freopen 函数。fwide 可以设置一个流的定向，而 freopen 会清除一个流的定向。
@@ -1141,6 +1141,29 @@ I/O 操作：</p>
     </footer>
 
 
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.15.6/dist/katex.min.css"integrity="sha256-J&#43;iAE0sgH8QSz9hpcDxXIftnj65JEZgNhGcgReTTK9s="crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.15.6/dist/katex.min.js"integrity="sha256-InsNdER1b2xUewP&#43;pKCUJpkhiqwHgqiPXDlIk7GzBu4="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.15.6/dist/contrib/auto-render.min.js"integrity="sha256-y39Mpg7V3D4lhBX4x6O0bUqTV4pSrfgwEfGKfxkOdgI="crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+        renderMathInElement(document.querySelector(`.article-content`), {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ]
+        });})
+</script>
     
 </article>
 

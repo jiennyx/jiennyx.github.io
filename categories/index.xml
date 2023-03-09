@@ -6,7 +6,15 @@
         <description>Recent content in Categories on imxiejie</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>en-us</language>
-        <lastBuildDate>Thu, 23 Feb 2023 17:32:24 +0800</lastBuildDate><atom:link href="https://www.imxiejie.me/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Fri, 24 Feb 2023 15:09:57 +0800</lastBuildDate><atom:link href="https://www.imxiejie.me/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Golang</title>
+        <link>https://www.imxiejie.me/categories/golang/</link>
+        <pubDate>Fri, 24 Feb 2023 15:09:57 +0800</pubDate>
+        
+        <guid>https://www.imxiejie.me/categories/golang/</guid>
+        <description></description>
+        </item>
+        <item>
         <title>数据结构与算法</title>
         <link>https://www.imxiejie.me/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/</link>
         <pubDate>Thu, 23 Feb 2023 17:32:24 +0800</pubDate>

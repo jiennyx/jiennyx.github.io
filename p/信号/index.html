@@ -16,7 +16,7 @@
 
 <link rel='canonical' href='https://www.imxiejie.me/p/%E4%BF%A1%E5%8F%B7/'>
 
-<link rel="stylesheet" href="/scss/style.min.8191399262444ab68b72a18c97392f5349be20a1615d77445be51e974c144cff.css"><meta property='og:title' content='信号'>
+<link rel="stylesheet" href="/scss/style.min.90546427ecbd2d81195644e247faf6b81eebafbfbea54637562a06e03a04bbda.css"><meta property='og:title' content='信号'>
 <meta property='og:description' content='一、什么是信号？ 信号 是软件中断，信号提供了一种处理异步事件的方法。每个信号都有一个名字，而且都是以 3 个字符 SIG 开头，比如 SIGCHLD、SIGQUIT 等等。每个名字都会对应一个正整形编号，即不存在编号为 0 的信号，编号为 0 的信号也被称为 空信号。
 二、如何产生信号？ 有很多方式可以产生信号，比如：
 最常见的应该是当我们在终端按下 Ctrl&#43;C 时，该信号可以终止当前前台的进程。 硬件异常产生信号，比如除数为 0，引用了无效内存等。 平时使用 kill 命令向后台进程传递信号，比如常用 kill 命令终止后台进程。 当检测到某种软件条件已经发生，并应将其通知有关进程时也产生信号。 当一个信号产生时，内核通常在进程表中以某种形式设置一个标志，当对信号采取了这种动作时，我们就说向进程 递送 了一个信号。而在信号产生和递送之间，我们称信号是 未决 的。
@@ -405,6 +405,29 @@ SIGKILL
     </footer>
 
 
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.15.6/dist/katex.min.css"integrity="sha256-J&#43;iAE0sgH8QSz9hpcDxXIftnj65JEZgNhGcgReTTK9s="crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.15.6/dist/katex.min.js"integrity="sha256-InsNdER1b2xUewP&#43;pKCUJpkhiqwHgqiPXDlIk7GzBu4="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.15.6/dist/contrib/auto-render.min.js"integrity="sha256-y39Mpg7V3D4lhBX4x6O0bUqTV4pSrfgwEfGKfxkOdgI="crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+        renderMathInElement(document.querySelector(`.article-content`), {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ]
+        });})
+</script>
     
 </article>
 

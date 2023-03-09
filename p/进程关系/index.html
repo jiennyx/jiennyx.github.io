@@ -8,7 +8,7 @@
 
 <link rel='canonical' href='https://www.imxiejie.me/p/%E8%BF%9B%E7%A8%8B%E5%85%B3%E7%B3%BB/'>
 
-<link rel="stylesheet" href="/scss/style.min.8191399262444ab68b72a18c97392f5349be20a1615d77445be51e974c144cff.css"><meta property='og:title' content='进程关系'>
+<link rel="stylesheet" href="/scss/style.min.90546427ecbd2d81195644e247faf6b81eebafbfbea54637562a06e03a04bbda.css"><meta property='og:title' content='进程关系'>
 <meta property='og:description' content='一、终端登录 在早期的 UNIX 系统中，用户用 哑终端 进行登录，即用硬连接链接到主机。终端可以是本地的（直接连接）也可以是远程的（通过调制解调器连接）。在这两种情况下，登录都经由内核内的终端设备驱动程序。因为连接到主机上的终端设备数是固定的，所以同时的登录数也就有了上限。
 以 BSD 终端登录为例 系统管理者创建名通常为 /etc/ttys 的文件，其中，每个终端设备都有一行，每一行说明设备名和传到 getty 程序的参数。当系统自举时，内核创建进程 ID 为 1 的进程，也就是 init 进程，init 进程使系统进入多用户模式。init 进程读取 /etc/ttys 文件，对每个允许登录的终端设备，init 进程调用一次 fork，它所生成的子进程则 exec getty 程序。
 如下图 9-1 所示，其中所有进程的实际用户 ID 和有效用户 ID 都是 0，即它们都具有超级用户权限，init 以空环境 exec getty 程序。getty 对终端设备调用 open 函数，以读、写方式将终端打开。一旦设备被打开，则文件描述符 0、1、2 就被设备到该设备，随后 getty 输出 &amp;quot;login: &amp;quot; 之类的信息，当用户输入了用户名后，getty 的工作就完成了，随后它开始调用 login 程序。 如上图 9-2 所示，login 得到了用户名后，能够调用 getpawnam 获取相应用户的口令文件登录项，然后调用 getpass 以显示提示 &amp;quot;Password: &amp;quot;，在用户输入完口令后，它调用 crypt 将用户输入的口令加密，并与该用户在阴影口令文件中的登录项 pw_passwd 进行比较。如果用户几次输入的口令无都无效，则 login 以参数 1 调用 exit 表示登录过程失败。父进程即 init 进程了解到子进程的终止情况后，将再次调用 fork ，其后又执行 getty，对此终端重复上述过程。'>
@@ -698,6 +698,29 @@ SIGTTIN。该信号通常会停止此后台作业，而 shell
     </footer>
 
 
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.15.6/dist/katex.min.css"integrity="sha256-J&#43;iAE0sgH8QSz9hpcDxXIftnj65JEZgNhGcgReTTK9s="crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.15.6/dist/katex.min.js"integrity="sha256-InsNdER1b2xUewP&#43;pKCUJpkhiqwHgqiPXDlIk7GzBu4="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.15.6/dist/contrib/auto-render.min.js"integrity="sha256-y39Mpg7V3D4lhBX4x6O0bUqTV4pSrfgwEfGKfxkOdgI="crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+        renderMathInElement(document.querySelector(`.article-content`), {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ]
+        });})
+</script>
     
 </article>
 

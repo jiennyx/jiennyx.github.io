@@ -11,7 +11,7 @@
 
 <link rel='canonical' href='https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6-i/o/'>
 
-<link rel="stylesheet" href="/scss/style.min.8191399262444ab68b72a18c97392f5349be20a1615d77445be51e974c144cff.css"><meta property='og:title' content='文件 I/O'>
+<link rel="stylesheet" href="/scss/style.min.90546427ecbd2d81195644e247faf6b81eebafbfbea54637562a06e03a04bbda.css"><meta property='og:title' content='文件 I/O'>
 <meta property='og:description' content='一、文件描述符 文件描述符（file descriptor） 是一个非负整数，对于内核而言，所有打开的文件都通过文件描述符引用。当创建一个新文件或打开一个现有文件时，内核向进程返回一个文件描述符。
 按照惯例，UNIX 系统 shell 把文件描述符 0 跟进程的标准输入关联，1 跟标准输出关联，2 跟标准错误关联。
 文件描述符的变化范围因系统而异，为 0 ~ OPEN_MAX - 1。早期的 UNIX 系统实现采用的上限值是 19，现在的系统大多数将上限值提升至 63。对于其他一些系统，文件描述符的变化范围是无限的，它只受到系统配置的存储器总量、整形的字长以及系统管理员所配置的软限制和硬限制的约束。
@@ -806,6 +806,29 @@ n，前提是描述符 n 是打开的。</p>
     </footer>
 
 
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.15.6/dist/katex.min.css"integrity="sha256-J&#43;iAE0sgH8QSz9hpcDxXIftnj65JEZgNhGcgReTTK9s="crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.15.6/dist/katex.min.js"integrity="sha256-InsNdER1b2xUewP&#43;pKCUJpkhiqwHgqiPXDlIk7GzBu4="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.15.6/dist/contrib/auto-render.min.js"integrity="sha256-y39Mpg7V3D4lhBX4x6O0bUqTV4pSrfgwEfGKfxkOdgI="crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+        renderMathInElement(document.querySelector(`.article-content`), {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ]
+        });})
+</script>
     
 </article>
 
