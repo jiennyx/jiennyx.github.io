@@ -3,18 +3,27 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://www.imxiejie.me/</loc>
-    <lastmod>2023-02-24T15:09:57+08:00</lastmod>
+    <lastmod>2023-03-07T17:55:38+08:00</lastmod>
+  </url><url>
+    <loc>https://www.imxiejie.me/categories/</loc>
+    <lastmod>2023-03-07T17:55:38+08:00</lastmod>
+  </url><url>
+    <loc>https://www.imxiejie.me/post/</loc>
+    <lastmod>2023-03-07T17:55:38+08:00</lastmod>
+  </url><url>
+    <loc>https://www.imxiejie.me/categories/redis/</loc>
+    <lastmod>2023-03-07T17:55:38+08:00</lastmod>
+  </url><url>
+    <loc>https://www.imxiejie.me/p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</loc>
+    <lastmod>2023-03-07T17:55:38+08:00</lastmod>
+  </url><url>
+    <loc>https://www.imxiejie.me/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/</loc>
+    <lastmod>2023-03-07T17:55:38+08:00</lastmod>
   </url><url>
     <loc>https://www.imxiejie.me/p/golang-slice-%E5%88%87%E7%89%87/</loc>
     <lastmod>2023-02-24T15:09:57+08:00</lastmod>
   </url><url>
-    <loc>https://www.imxiejie.me/categories/</loc>
-    <lastmod>2023-02-24T15:09:57+08:00</lastmod>
-  </url><url>
     <loc>https://www.imxiejie.me/categories/golang/</loc>
-    <lastmod>2023-02-24T15:09:57+08:00</lastmod>
-  </url><url>
-    <loc>https://www.imxiejie.me/post/</loc>
     <lastmod>2023-02-24T15:09:57+08:00</lastmod>
   </url><url>
     <loc>https://www.imxiejie.me/p/golang-make-%E5%92%8C-new-%E7%9A%84%E5%8C%BA%E5%88%AB/</loc>
@@ -57,9 +66,6 @@
     <lastmod>2023-02-11T21:02:47+08:00</lastmod>
   </url><url>
     <loc>https://www.imxiejie.me/p/mysql-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</loc>
-    <lastmod>2023-02-11T21:02:47+08:00</lastmod>
-  </url><url>
-    <loc>https://www.imxiejie.me/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/</loc>
     <lastmod>2023-02-11T21:02:47+08:00</lastmod>
   </url><url>
     <loc>https://www.imxiejie.me/p/%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/</loc>
