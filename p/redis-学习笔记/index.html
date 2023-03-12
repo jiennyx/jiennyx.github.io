@@ -232,6 +232,33 @@ Redis 基于单线程处理 I/O 请求的性能瓶颈主要在 2 个方面：
         </li>
         <li><a href="#五哨兵机制">五、哨兵机制</a></li>
         <li><a href="#六切片集群">六、切片集群</a></li>
+        <li><a href="#七异步机制">七、异步机制</a></li>
+        <li><a href="#八内存碎片">八、内存碎片</a></li>
+        <li><a href="#九将-redis-用作缓存">九、将 Redis 用作缓存</a>
+          <ol>
+            <li><a href="#redis-缓存处理请求的两种情况">Redis 缓存处理请求的两种情况</a></li>
+            <li><a href="#只读缓存">只读缓存</a></li>
+            <li><a href="#读写缓存">读写缓存</a></li>
+          </ol>
+        </li>
+        <li><a href="#十缓存淘汰机制">十、缓存淘汰机制</a>
+          <ol>
+            <li><a href="#如何设置缓存容量">如何设置缓存容量？</a></li>
+            <li><a href="#redis-中的缓存淘汰策略">Redis 中的缓存淘汰策略</a></li>
+          </ol>
+        </li>
+        <li><a href="#十一缓存异常">十一、缓存异常</a>
+          <ol>
+            <li><a href="#如何处理缓存和数据库数据不一致问题">如何处理缓存和数据库数据不一致问题？</a></li>
+            <li><a href="#缓存雪崩">缓存雪崩</a></li>
+            <li><a href="#缓存击穿">缓存击穿</a></li>
+            <li><a href="#缓存穿透">缓存穿透</a></li>
+            <li><a href="#缓存污染">缓存污染</a></li>
+          </ol>
+        </li>
+        <li><a href="#十一原子操作">十一、原子操作</a></li>
+        <li><a href="#十二分布式锁">十二、分布式锁</a></li>
+        <li><a href="#十三数据倾斜">十三、数据倾斜</a></li>
       </ol>
     </li>
   </ol>
@@ -302,7 +329,7 @@ Redis 基于单线程处理 I/O 请求的性能瓶颈主要在 2 个方面：
 
 
                 <time class="article-time--reading">
-                    2 minute read
+                    3 minute read
                 </time>
             </div>
         
@@ -548,7 +575,253 @@ key，通过 CRC16 计算，对应其中的一个哈希槽。而哈希槽可以�
 65536，发送心跳包的消息头太大，浪费带宽。另外 Redis 集群节点数基本不会超过
 1000 个，对于 1000 个节点，16384 个槽位已经够用。</p>
 </blockquote>
-<p>参考资料：极客时间《《Redis 核心技术与实战》》</p>
+<h3 id="七异步机制">七、异步机制</h3>
+<p>对于 Redis 来说，可能会阻塞主线程的操作有：</p>
+<ul>
+<li>集合全量查询和聚合操作。</li>
+<li>bigkey 删除。</li>
+<li>清空数据库。</li>
+<li>AOF 日志同步写。</li>
+<li>RDB 文件加载。</li>
+</ul>
+<p>如果一个操作不是主线程上的关键路径上的操作，那么就可以使用异步子线程来执行。对于查询操作，客户端需要等待结果返回，无法使用异步机制。bigkey
+删除、清空数据库和 AOF 日志同步写不需要返回结果，可以使用后台子线程来执行。而对于
+RDB 文件加载，客户端需要操作数据，就必须等待 RDB 文件加载完成。</p>
+<p>Redis 主线程在启动后，会使用 pthread_create 函数创建 3 个子线程，分别负责 AOF
+日志的写操作、键值对的删除和文件关闭的异步执行。主线程会把这些任务封装后放入任务队列，子线程读取任务后开始执行相应操作。</p>
+<p>当客户端提交一个删除操作后，Redis
+会立即给客户端返回一个完成信息。但只有当子线程从任务队列读取任务后才开始真正的删除操作，并释放相应的内存空间。这也被称为惰性删除。</p>
+<p>当 AOF 开启 everysec 后，主线程会把 AOF
+写操作放入任务队列，子线程读取后开始自行写入日志。</p>
+<p>下图展示了对应的执行过程：</p>
+<p><img src="/p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/redis7-1.webp"
+	width="2889"
+	height="1371"
+	srcset="/p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/redis7-1_hu35697b5b6982cdbe119e2d2e6785dfb5_121924_480x0_resize_q75_h2_box_2.webp 480w, /p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/redis7-1_hu35697b5b6982cdbe119e2d2e6785dfb5_121924_1024x0_resize_q75_h2_box_2.webp 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="210"
+		data-flex-basis="505px"
+	
+></p>
+<blockquote>
+<p>当有大量数据删除时，使用 UNLINK<br>
+清空数据库时，在后面加上 ASYNC，如 FLUSHDB ASYNC，FLUSHALL ASYNC</p>
+</blockquote>
+<h3 id="八内存碎片">八、内存碎片</h3>
+<blockquote>
+<p>为什么删除数据后，内存占用率还是很高？</p>
+<p>当数据被删除后，Redis
+释放的空间会由内存分配器管理，不会立即返回给操作系统。所以，操作系统仍然会记录着给
+Redis 分配了大量内存。此外，Redis
+释放的内存可能不是连续的，这些不连续的内存空间很有可能处于一种闲置的状态。这就会导致一个问题：虽然有空闲空间，但是却无法用来存储数据。</p>
+</blockquote>
+<h3 id="九将-redis-用作缓存">九、将 Redis 用作缓存</h3>
+<p>之所以需要缓存，是因为一个系统中不同层之间的访问速度不一样，需要用缓存来抹平这种速度差异。</p>
+<p>缓存的特征：</p>
+<ul>
+<li>在一个层次化的系统重，缓存一定是一个快速子系统，数据存在缓存中，能够避免每次从慢速子系统中存取数据。</li>
+<li>缓存的容量总是小于后端的慢速子系统的，不可能把所有数据都存放在缓存中。</li>
+</ul>
+<p>所以，缓存和后端慢速子系统之间，必然存在数据写回和再读取的过程。</p>
+<h4 id="redis-缓存处理请求的两种情况">Redis 缓存处理请求的两种情况</h4>
+<ul>
+<li>缓存命中。Redis 中有相应的数据，直接读取 Redis，性能快。</li>
+<li>缓存缺失。Redis 没有相应数据，需要从后端数据库读取，此外，还需要将数据写回
+Redis。缓存更新会涉及到缓存和数据库之间的一致性问题。</li>
+</ul>
+<h4 id="只读缓存">只读缓存</h4>
+<p>当 Redis 用作只读缓存时，应用直接从 Redis
+中查询数据是否存在。若没有，则从数据库中查询写回。而所有的数据写请求，会直接发往后端数据库，对于删改的数据来说，如果
+Redis 缓存了相应的数据，需要将这些数据删除。</p>
+<p><img src="/p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/redis8-1.webp"
+	width="3000"
+	height="1638"
+	srcset="/p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/redis8-1_hu454a3f0836b868049a0fb695a4ebbb72_75492_480x0_resize_q75_h2_box_2.webp 480w, /p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/redis8-1_hu454a3f0836b868049a0fb695a4ebbb72_75492_1024x0_resize_q75_h2_box_2.webp 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="183"
+		data-flex-basis="439px"
+	
+></p>
+<h4 id="读写缓存">读写缓存</h4>
+<p>对于读写缓存来说，除了读请求会发往 Redis，所有的写请求也会发往
+Redis，在缓存中直接进行数据的增删改操作。因为 Redis 的高性能访问特性，数据的增删改操作可以快速完成，处理结果也会快速返回给应用，可以提升业务应用的访问速度。</p>
+<p>然而 Redis 是内存数据库，如果发生意外，内存中的数据就会丢失，给业务带来风险。</p>
+<p>根据业务应用对数据可靠性和缓存性能的不同要求，有同步直写和异步写回两种策略。</p>
+<p><em>同步直写</em>
+是指写请求除了会发生缓存，也会发给后端数据库，当都写完数据时，才会返回给客户端。这样，即使发生意外，最新的数据已经保存在数据库中，保证了数据可靠性。但是，同步直写会降低缓存的性能，缓存的写速度很快，后端数据库较慢，即使缓存写完了数据，还需要等待后端数据库操作完成才能给应用返回结果，增加了缓存的响应延迟。</p>
+<p><em>异步写回</em>
+是指所有的写请求都在缓存中处理，直到这些增改的数据要从缓存中淘汰出来时，才写回后端数据库。这样能够很快返回结果，但是存在数据丢失风险。</p>
+<p><img src="/p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/redis8-2.webp"
+	width="2878"
+	height="1566"
+	srcset="/p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/redis8-2_hu9759a2826d12c51edc58ca857115519d_144176_480x0_resize_q75_h2_box_2.webp 480w, /p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/redis8-2_hu9759a2826d12c51edc58ca857115519d_144176_1024x0_resize_q75_h2_box_2.webp 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="183"
+		data-flex-basis="441px"
+	
+></p>
+<p>如何选择？主要看写请求是否有加速的需求。</p>
+<ul>
+<li>如果需要对写请求加速，选择读写缓存。</li>
+<li>如果写请求很少，或者只是需要提升读请求的响应速度，选择只读缓存。</li>
+</ul>
+<p>例子：
+在商品大促的场景中，商品的库存信息会一直被修改。如果每次修改都需到数据库中处理，就会拖慢整个应用，此时，我们通常会选择读写缓存的模式。而在短视频 App 的场景中，虽然视频的属性有很多，但是，一般确定后，修改并不频繁，此时，在数据库中进行修改对缓存影响不大，所以只读缓存模式是一个合适的选择。</p>
+<h3 id="十缓存淘汰机制">十、缓存淘汰机制</h3>
+<p>缓存淘汰机制包括两步：</p>
+<ol>
+<li>根据一定的策略，筛选出对应用访问来说不重要的数据;</li>
+<li>将这些数据从缓存中删除，为新来的数据腾出空间。</li>
+</ol>
+<h4 id="如何设置缓存容量">如何设置缓存容量？</h4>
+<p>八二原理：有 20% 的数据贡献了 80% 的访问，而剩下数据量很大，但是只贡献了 20%
+的访问量。</p>
+<p>具体如何设置缓存容量，要根据应用访问特征和成本开销来综合考虑。建议设置为 15%</p>
+<ul>
+<li>30% ，兼顾访问性能和内存空间开销。</li>
+</ul>
+<h4 id="redis-中的缓存淘汰策略">Redis 中的缓存淘汰策略</h4>
+<p>共有 8 种淘汰策略：</p>
+<ul>
+<li>不进行数据淘汰的策略，只有 noeviction 一种。</li>
+<li>进行数据淘汰的有 7 种策略。
+而数据淘汰的 7 种策略，可分为：</li>
+<li>在设置了过期时间的数据中进行淘汰：volatile-random、volatile-ttl、volatile-lru
+和 volatile-lfu。</li>
+<li>在所有数据范围内进行淘汰：allkeys-lru、allkeys-lrf 和 allkeys-random。</li>
+</ul>
+<p><img src="/p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/redis10-1.webp"
+	width="1757"
+	height="765"
+	srcset="/p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/redis10-1_hu59144d998d22794ecde44b0f3a60a22d_71668_480x0_resize_q75_h2_box_2.webp 480w, /p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/redis10-1_hu59144d998d22794ecde44b0f3a60a22d_71668_1024x0_resize_q75_h2_box_2.webp 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="229"
+		data-flex-basis="551px"
+	
+></p>
+<ul>
+<li>默认情况下，并不会淘汰数据，即 noeviction
+策略，一旦缓存满了，再有写请求进来，Redis 不再提供服务，会直接返回错误。</li>
+<li>volatile-ttl
+在筛选时，会针对设置了过期时间的数据，根据过期时间的先后进行删除。</li>
+<li>volatile-random 针对设置了过期时间的数据随机删除。</li>
+<li>volatile-lru 针对设置了过期时间的数据使用 LRU 算法删除。</li>
+<li>volatile-lfu 针对设置了过期时间的数据使用 LFU 算法删除。</li>
+<li>allkeys-random 从所有数据中随机选择并删除。</li>
+<li>allkeys-lru 从所有数据中使用 LRU 算法删除。</li>
+<li>allkeys-lfu 从所有数据中使用 LFU 算法删除。</li>
+</ul>
+<p>使用建议：</p>
+<ul>
+<li>优先使用 allkeys-lru
+策略。如果业务数据有明显的冷热之分，使用该策略可以充分发挥 LRU 算法优势。</li>
+<li>如果业务数据没有明显冷热之分，访问频率相差不大，建议使用 allkeys-random。</li>
+<li>如果业务中有置顶需求，比如置顶新闻等，使用 volatile-lru
+策略，同时不给置顶数据设置过期时间。</li>
+</ul>
+<h3 id="十一缓存异常">十一、缓存异常</h3>
+<h4 id="如何处理缓存和数据库数据不一致问题">如何处理缓存和数据库数据不一致问题？</h4>
+<p>数据的一致性包含两种情况：</p>
+<ul>
+<li>缓存中有数据，那么缓存和数据库中的值相同。</li>
+<li>缓存中没有数据，数据库中有最新的数据。</li>
+</ul>
+<p>对于读写缓存，采用同步写回策略，可以保证缓存和数据库中的数据一致性。</p>
+<p>对于只读缓存，分为先删除缓存，后更新数据库及先更新数据库，后删除缓存两种。</p>
+<p><img src="/p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/redis11-1.webp"
+	width="2889"
+	height="1355"
+	srcset="/p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/redis11-1_hu634b5dfd73e2a16cf1c99a1bf5e57052_182078_480x0_resize_q75_h2_box_2.webp 480w, /p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/redis11-1_hu634b5dfd73e2a16cf1c99a1bf5e57052_182078_1024x0_resize_q75_h2_box_2.webp 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="213"
+		data-flex-basis="511px"
+	
+></p>
+<blockquote>
+<p>延迟双删根本无法解决数据一致性问题，感觉唯一的办法是让整个事务方法串行执行。要么借助分布式锁，要么借助
+MySQL 本身的 UPDATE 独占锁。</p>
+</blockquote>
+<blockquote>
+<p>没有什么银弹技术，技术方法要跟具体业务相结合。</p>
+</blockquote>
+<h4 id="缓存雪崩">缓存雪崩</h4>
+<p>缓存雪崩是指大大量的应用请求无法在 Redis
+缓存中处理。一般是因为缓存中有大量的数据同时过期，导致请求都打向了数据库。</p>
+<p>解决办法：</p>
+<ul>
+<li>避免给大量的数据设置相同的过期时间，在过期时间的基础上进行微调。</li>
+<li>服务降级。对于非核心业务，返回预定义信息或错误信息。对于核心业务，缓存缺失后，从数据库中获取。</li>
+</ul>
+<h4 id="缓存击穿">缓存击穿</h4>
+<p>缓存击穿是指针对某个访问非常频繁的热点数据，无法在缓存中处理，紧接着，访问该数据的大量请求，直接打向了数据库。</p>
+<p>解决办法：</p>
+<ul>
+<li>对于热点数据，不设置过期时间。</li>
+</ul>
+<h4 id="缓存穿透">缓存穿透</h4>
+<p>缓存穿透是指所访问的数据不在缓存中，也不在数据库中，导致缓存和数据库都成了摆设，也无法从数据库中读取数据写回缓存。</p>
+<p>发生的可能原因：</p>
+<ul>
+<li>业务层误操作：缓存中的数据和数据库中的数据被误删除。</li>
+<li>恶意攻击：专门访问数据库中没有的数据。</li>
+</ul>
+<p>解决办法：</p>
+<ul>
+<li>缓存空值或缺省值。</li>
+<li>使用布隆过滤器快速判断数据是否存在，减轻数据库压力。</li>
+<li>前端进行拦截。</li>
+</ul>
+<h4 id="缓存污染">缓存污染</h4>
+<p>缓存污染是指留在缓存中的数据，实际不会再被访问了，但又占据了缓存空间。如果这样的数据量很大，甚至占满了缓存，每次有新缓存写入时，还需要把这些数据淘汰出去，就会增加缓存操作时间开销。</p>
+<p>因此，要解决缓存污染的问题，最关键的技术点就是要识别出这些只访问一次或者访问次数很少的数据，在淘汰数据时，优先把它们淘汰。</p>
+<p>LFU 在 LRU
+的基础上增加访问次数，在筛选数据时，首先会淘汰访问次数少的数据，如果访问次数相同，再筛选并淘汰时间久远的数据。在实际应用中，LRU 和 LFU 都有应用。LRU
+更关注数据的时效性，LFU 更关注数据的访问频次。</p>
+<h3 id="十一原子操作">十一、原子操作</h3>
+<p>Redis 提供了两种原子操作来实现并发控制：</p>
+<ul>
+<li>单命令操作</li>
+<li>Lua 脚本</li>
+</ul>
+<h3 id="十二分布式锁">十二、分布式锁</h3>
+<p>通过如下命令来实现分布式锁：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">SET key value [EX seconds | PX milliseconds]  [NX]
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="十三数据倾斜">十三、数据倾斜</h3>
+<p><img src="/p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/redis13-1.webp"
+	width="2926"
+	height="1350"
+	srcset="/p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/redis13-1_huf02df254e6f2aabcff01eac74bf596b6_138414_480x0_resize_q75_h2_box_2.webp 480w, /p/redis-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/redis13-1_huf02df254e6f2aabcff01eac74bf596b6_138414_1024x0_resize_q75_h2_box_2.webp 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="216"
+		data-flex-basis="520px"
+	
+></p>
+<p>参考资料：蒋德钧《《Redis 核心技术与实战》》</p>
 
 </section>
 

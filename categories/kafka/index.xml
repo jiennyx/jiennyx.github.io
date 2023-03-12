@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Kafka on imxiejie</title>
+        <link>https://www.imxiejie.me/categories/kafka/</link>
+        <description>Recent content in Kafka on imxiejie</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>en-us</language>
+        <lastBuildDate>Sun, 12 Mar 2023 16:46:33 +0800</lastBuildDate><atom:link href="https://www.imxiejie.me/categories/kafka/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>面试杂七杂八</title>
+        <link>https://www.imxiejie.me/p/%E9%9D%A2%E8%AF%95%E6%9D%82%E4%B8%83%E6%9D%82%E5%85%AB/</link>
+        <pubDate>Sun, 12 Mar 2023 16:46:33 +0800</pubDate>
+        
+        <guid>https://www.imxiejie.me/p/%E9%9D%A2%E8%AF%95%E6%9D%82%E4%B8%83%E6%9D%82%E5%85%AB/</guid>
+        <description>&lt;h4 id=&#34;1-为什么使用-ssdb&#34;&gt;1. 为什么使用 SSDB？&lt;/h4&gt;
+&lt;p&gt;Redis 基于内存，存不下只能扩容内存，而 SSDB 虽然也是基于内存，但是底层基于
+LevelDB，存不下可以扩硬盘解决。硬盘比内存便宜。此外棋牌游戏业务比较简单，SSDB
+使用方便简单。&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>Kafka 学习笔记</title>
+        <link>https://www.imxiejie.me/p/kafka-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</link>
+        <pubDate>Thu, 09 Mar 2023 16:03:14 +0800</pubDate>
+        
+        <guid>https://www.imxiejie.me/p/kafka-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</guid>
+        <description>&lt;h3 id=&#34;一kafka-是什么&#34;&gt;一、Kafka 是什么？&lt;/h3&gt;
+&lt;p&gt;Kafka
+是一款开源的消息引擎系统，也是一个分布式流处理平台，根据维基百科的定义，消息引擎系统是指一组规范，企业利用这组规范在不同系统之间传递语义正确的消息，实现松耦合的异步式数据传递。Kafka 同时支持
+点对点模型和发布/订阅模型。&lt;/p&gt;
+&lt;h3 id=&#34;二kakfa-中的术语&#34;&gt;二、Kakfa 中的术语&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Broker 服务实例：服务代理节点，通常一台机器部署一个服务实例。&lt;/li&gt;
+&lt;li&gt;Record 消息：Kafka 处理的主要对象。&lt;/li&gt;
+&lt;li&gt;Topic 主题：承载消息的逻辑容器，实际中多用来区分业务。&lt;/li&gt;
+&lt;li&gt;Partition 分区：一个有序不变的消息序列，一个主题下可以有多个分区。&lt;/li&gt;
+&lt;li&gt;Offset 消息位移：表示分区中每条的消息的位置，是一个单调递增且不变的值。&lt;/li&gt;
+&lt;li&gt;Replica 副本：同一个消息可以被拷贝到多个地方提供数据冗余。副本分为领导者副本和追随者副本，各自有不同的职责划分，领导者副本负责读写请求，追随者副本负责同步领导者副本消息。副本是在分区层级下的，即每个分区可以配置多个副本实现高可用。 生产者 Producer：向主题发布新消息的客户端。&lt;/li&gt;
+&lt;li&gt;Consumer 消费者：从主题订阅消息的客户端。&lt;/li&gt;
+&lt;li&gt;Consumer Offset 消费者位移：表示消费者的消费进度，每个消费者有自己的消费位移。&lt;/li&gt;
+&lt;li&gt;Consumer Group 消费者组：多个消费者实例组成一个组，同时消费多个分区实现高吞吐。&lt;/li&gt;
+&lt;li&gt;Rebalance 重平衡：消费者组内某个消费者挂掉后，其他消费者实例自动重新分配订阅主题分区的过程。Rebalance
+是实现 Kafka 高可用的重要手段。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;为什么 Kafka 不像 MySQL 那样允许追随者副本对外提供读服务？&lt;/p&gt;
+&lt;p&gt;首先肯定会存在数据不一致的问题，另外主从读写无非是减轻主节点压力，将读请求负载均衡到从节点，而 Kafka
+的分区已经在某种程度上实现了负载均衡的效果。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;三参数配置&#34;&gt;三、参数配置&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;log.dirs：指定了 Broker
+需要使用的若干个文件目录路径，生产环境为该参数配置多个路径，如果有条件，多个路径挂载到不同物理磁盘上。
+&lt;blockquote&gt;
+&lt;p&gt;log.dir 参数是对 log.dirs 的补充，不用设置。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/li&gt;
+&lt;li&gt;listners：监听器。告诉外部连接者需要通过什么协议访问指定主机名和端口开放的
+Kafka 服务。&lt;/li&gt;
+&lt;li&gt;advertised.listners：用于对外发布，主要用于外网访问。&lt;/li&gt;
+&lt;li&gt;auto.create.topics.enable：是否允许自动创建 Topic。建议关闭，防止出现非期望的
+Topic 名。&lt;/li&gt;
+&lt;li&gt;unclean.leader.election.enable：是否允许 Unclean Leader 选举。建议设置为
+false。一般来说，只有保存数据较多的副本才有资格参加 Leader 选举。&lt;/li&gt;
+&lt;li&gt;auto.leader.rebalance.enable：是否允许 Kafka 定期对一些 Topic 分区进行 Leader
+重选举。建议设置为 false。本质换 Leader，选举一次 Leader 代价较高，原本向
+A 的请求都要切换为向 B，本质上没有任何性能收益。&lt;/li&gt;
+&lt;li&gt;log.retention.{hours|minutes|ms}：控制一条消息保存多长时间。一般建议设置为
+hours，log.retention.hours = 168 表示默认保存 7 天的数据，自动删除
+7 天前的数据，很多公司把 Kafka 当做存储来使用，该值就要相应调大。&lt;/li&gt;
+&lt;li&gt;log.retention.bytes：指定 Broker 为消息保存的总磁盘容量大小。默认值为
+-1，表示无限制。根据具体情况来使用。&lt;/li&gt;
+&lt;li&gt;message.max.bytes：控制 Broker 能够接收的最大消息大小。默认值为 1000012，不到
+1MB，但实际场景中大于 1MB
+的消息也很常见。建议设置一个较大的值是比较保险的做法。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;四生产者消息分区&#34;&gt;四、生产者消息分区&lt;/h3&gt;
+&lt;p&gt;Kafka
+的消息组织结构是按三层组织的：主题-分区-消息。主题下的每一条消息只会保存在某一个分区中，不会
+在多个分区中被保存多份。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.imxiejie.me/p/kafka-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/kafka4-1.webp&#34;
+	width=&#34;4000&#34;
+	height=&#34;1911&#34;
+	srcset=&#34;https://www.imxiejie.me/p/kafka-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/kafka4-1_hu22705894b0648819621df0002d134d7b_108126_480x0_resize_q75_h2_box_2.webp 480w, https://www.imxiejie.me/p/kafka-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/kafka4-1_hu22705894b0648819621df0002d134d7b_108126_1024x0_resize_q75_h2_box_2.webp 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;209&#34;
+		data-flex-basis=&#34;502px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;分区的作用主要是为了提供负载均衡的能力，或者说对数据分区的主要原因是提高系统的可伸缩性。&lt;/p&gt;
+&lt;p&gt;分区策略：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;轮询。按顺序分配到所有分区。&lt;/li&gt;
+&lt;li&gt;随机。随机发送到一个分区中。&lt;/li&gt;
+&lt;li&gt;按 key 分区。相同的键会被发送到一个分区中。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;除了上述的分区策略，也可以自定义分区策略。&lt;/p&gt;
+&lt;h3 id=&#34;五生产者消息压缩&#34;&gt;五、生产者消息压缩&lt;/h3&gt;
+&lt;p&gt;在 Kafka 种，消息压缩可能发生在两个地方：生产者和 Broker 端。&lt;br&gt;
+让 Broker 重新压缩消息的情况可能有两个：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Broker 端指定了和生产者不同的压缩算法。&lt;/li&gt;
+&lt;li&gt;Broker 端发生了消息格式转换。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;对于消息格式：&lt;/p&gt;
+&lt;p&gt;消息（v1 叫 message，v2 叫 record）是分批次（batch）读写的，batch 是 kafka 读写（网络传输和文件读写）的基本单位，不同版本，对相同（或者叫相似）的概念，叫法不一样。
+v1（kafka 0.11.0 之前）:message set, message
+v2（kafka 0.11.0 以后）:record batch,record
+其中 record batch 对英语 message set，record 对应于 message。
+一个 record batch（message set）可以包含多个 record（message）。&lt;/p&gt;
+&lt;h3 id=&#34;六无消息丢失配置&#34;&gt;六、无消息丢失配置&lt;/h3&gt;
+&lt;p&gt;Kafka 只对已提交的消息做有限度的持久化保证。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;已提交是指当 Kafka 的若干个 Broker
+成功地接收到一条消息并写入到日志文件后，它们会告诉生产者程序这条消息已成功提交。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;如何配置？&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;不要使用 producer.send(msg)，而要使用 producer.send(msg,
+callback)。要使用带有回调的 send 方法。&lt;/li&gt;
+&lt;li&gt;设置 acks = all，acks 是 Producer
+上的一个参数，代表了对已提交的定义。如果设置为 all，表示所有 Broker
+收到消息才算是已提交。&lt;/li&gt;
+&lt;li&gt;设置 retries 为一个较大的值，retries 是 Producer
+的一个参数，即自动重试，当网络出现抖动，消息可能发送失败，配置该参数后，能够自动重试发送消息。&lt;/li&gt;
+&lt;li&gt;设置 unclean.leader.election.enable = false。这是 Broker
+端的参数，避免落后太多的 Broker 称为 Leader。&lt;/li&gt;
+&lt;li&gt;设置 replication.factor &amp;gt;= 3。这是 Broker
+端的参数，将消息多保存几份。防止消息丢失的主要机制就是冗余。&lt;/li&gt;
+&lt;li&gt;设置 min.insync.replicas &amp;gt; 1。这是 Broker
+端的参数，控制的是消息至少要写入多少个副本才算是提交。实际环境中建议大于 1。&lt;/li&gt;
+&lt;li&gt;确保 replication.factor &amp;gt; min.insync.replicas
+。如果两者相等，只要有一个副本挂了，整个分区就无法正常工作。建议
+replication.factor = min.insync.replicas + 1。&lt;/li&gt;
+&lt;li&gt;enable.auto.commit 设置为 false。采用手动提交，确保消息消费完成再提交。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;七拦截器&#34;&gt;七、拦截器&lt;/h3&gt;
+&lt;p&gt;拦截器的基本思想就是允许应用程序在不修改逻辑的情况下，动态地实现一组可插拔的事件处理逻辑链。Kafka
+拦截器主要分为生产者拦截器和消费者拦截器。生产者拦截器允许在发送消息之前以及消息提交成功之后植入拦截器逻辑，而消费者拦截器允许在消息消费之前和提交位移之后植入拦截逻辑。&lt;/p&gt;
+&lt;h3 id=&#34;八消息可靠性交付保障&#34;&gt;八、消息可靠性交付保障&lt;/h3&gt;
+&lt;p&gt;Kafka 对于消息的可靠性交付保障常见的承诺有以下三种：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;最多一次：消息可能会丢失，但绝不会重复发送。&lt;/li&gt;
+&lt;li&gt;至少一次：消息不会丢失，但可能会重复发送。&lt;/li&gt;
+&lt;li&gt;精确一次：消息不会丢失，也不会重复发送。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Kakfa
+默认的承诺是至少一次，但无论是最多一次还是至少一次，都不如精确一次来的有吸引力。Kafka
+通过幂等性和事务这两种机制来保证精确一次。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;幂等性。通过在 Producer 端设置 enable.idempotence = true
+来开启幂等性，大概的实现逻辑是在 Broker 多保存一些字段，当 Producer
+发送了具有相同该字段的值后，就知道消息重复了。幂等性只能保证在一个主题的一个分区上不出现重复消息，无法实现多个分区上的幂等性，其次，只能保证在一个会话上的幂等性。即需要设置按 key 分区。&lt;/li&gt;
+&lt;li&gt;事务。通过在 Producer 端设置 enable.idempotence = true 和设置 Producer
+端的事务 ID。通过事务，可以实现对多个 Topic 的多个 Partition
+的原子写入。即使在 Broker 端写入失败，Kafka
+还是会将相关消息写入到底层的日志中，也就是说 Consumer
+还是会看到这些消息。因此在 Consumer 端需要设置 isolation.level 的值。
+&lt;ol&gt;
+&lt;li&gt;read_uncommitted。这是默认值。表明 Consumer 能够读取到 Kafka
+写入的任何消息，不论事务型 Producer
+提交事务还是终止事务，其写入的消息都可以被读取。&lt;/li&gt;
+&lt;li&gt;read_committed。表明 Consumer 只会读取到事务型 Producer
+成功提交事务写入的消息。当然也能看到非事务型写入的消息。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>
